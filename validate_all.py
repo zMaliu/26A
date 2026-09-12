@@ -1,4 +1,4 @@
-"""三问结果的独立重算、收敛、守恒和物理范围交叉验证。"""
+"""四问结果的独立重算、收敛、守恒和物理范围交叉验证。"""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ from q2_3 import (
     solve_pde as solve_q2,
 )
 from q3 import MOISTURE_LIMIT, solve_problem3
+import q4
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -122,6 +123,36 @@ def validate_file_structure(report: dict):
     profile = read_sheet(OUTPUT_DIR / "output3.xlsx")
     ok = profile.shape == (21, 3) and np.all(np.isfinite(profile.iloc[:, 1:].to_numpy(dtype=float)));
     add_check(report, "output3_结构", ok, list(profile.shape), "21个径向节点，温度和水分均有限")
+
+    path = OUTPUT_DIR / "result4.xlsx"
+    book = pd.ExcelFile(path)
+    full = pd.read_excel(path, sheet_name=book.sheet_names[0])
+    normalized = pd.read_excel(path, sheet_name=book.sheet_names[2])
+    radius = pd.read_excel(path, sheet_name=book.sheet_names[3])
+    times = full.iloc[:, 0].to_numpy(dtype=float)
+    radii = full.iloc[:, -1].to_numpy(dtype=float)
+    values = full.iloc[:, 1:22].to_numpy(dtype=float)
+    physical_ok = True
+    target_cm = np.arange(0.0, 2.0 + 1e-12, 0.1)
+    for i in range(len(full)):
+        inside = target_cm <= radii[i] + 1e-8
+        physical_ok &= np.all(np.isfinite(values[i, inside])) and np.all(~np.isfinite(values[i, ~inside]))
+    ok = (
+        len(book.sheet_names) == 4
+        and full.shape[1] == 24
+        and normalized.shape[1] == 23
+        and radius.shape[1] == 2
+        and np.isclose(times[0], 0.0)
+        and np.isclose(times[-1], 184815.74, atol=0.02)
+        and np.all(np.diff(times) > 0)
+        and physical_ok
+        and np.all(np.isfinite(normalized.iloc[:, 1:].to_numpy(dtype=float)))
+        and np.all(np.isfinite(radius.iloc[:, 1:].to_numpy(dtype=float)))
+    )
+    add_check(report, "result4_结构", ok,
+              {"sheets": book.sheet_names, "shape": list(full.shape),
+               "first_time_s": float(times[0]), "last_time_s": float(times[-1])},
+              "变半径水分表、表6摘要、无量纲网格和半径插值均存在；域外物理位置留空")
 
 
 def q1_recompute_and_balance(report: dict):
@@ -285,6 +316,34 @@ def q3_full(report: dict):
     return {"t": t, "r": r, "T": temp, "C": moist, "maxC": max_c, "drying_time": drying_time, "m_res": m_res}
 
 
+def q4_recompute(report: dict):
+    """独立重算第四问并检查物理范围、半径和守恒。"""
+    q4_check = q4.validate_q4()
+    stored = read_sheet(OUTPUT_DIR / "result4.xlsx", 2).iloc[:, 1:-1].to_numpy(dtype=float)
+    t, radius, x, T, C, max_C, drying_time = q4.solve_problem4()
+    err = float(np.max(np.abs(np.round(C[:-1], 4) - stored[:-1])))
+    add_check(report, "问题四_独立重算", err <= 1e-12, err, "无量纲网格结果与Excel四位小数一致")
+    add_check(report, "问题四_物理与守恒", q4_check["moisture_balance_abs"] < 1e-10,
+              q4_check, "半径单调、恒温段最大水分单调、材料坐标积分恒等式成立")
+
+    short = {}
+    for dt in (120.0, 60.0, 30.0):
+        short[dt] = q4.solve_problem4(dt=dt, dx=0.05, t_end=18000.0, stop_at_threshold=False)
+    common_t = np.arange(0.0, 18000.0 + 1e-9, 120.0)
+    vals = {dt: s[4][np.rint(common_t / dt).astype(int)] for dt, s in short.items()}
+    et = [float(np.max(abs(vals[120.0] - vals[60.0]))), float(np.max(abs(vals[60.0] - vals[30.0])))]
+    coarse = {}
+    for dx in (0.1, 0.05, 0.025):
+        coarse[dx] = q4.solve_problem4(dt=60.0, dx=dx, t_end=18000.0, stop_at_threshold=False)
+    ec = [float(np.max(abs(coarse[0.1][4][-1] - coarse[0.05][4][-1][::2]))),
+          float(np.max(abs(coarse[0.05][4][-1] - coarse[0.025][4][-1][::2])))]
+    conv = {"time_error": et, "time_ratio": et[1] / et[0], "space_error": ec, "space_ratio": ec[1] / ec[0]}
+    add_check(report, "问题四_步长收敛", et[1] < et[0] and ec[1] < ec[0]
+              and 0.35 < conv["time_ratio"] < 0.65 and 0.15 < conv["space_ratio"] < 0.35,
+              conv, "固定ξ网格误差递减；时间比约0.5，空间比约0.25")
+    return {"check": q4_check, "convergence": conv}
+
+
 def plot_convergence(report: dict):
     PIC_DIR.mkdir(parents=True, exist_ok=True)
     colors = {"T": "tab:red", "C": "tab:blue", "maxC": "tab:green"}
@@ -398,6 +457,26 @@ def plot_cross_check(report: dict):
     plt.close(fig)
 
 
+def plot_q4_validation(report: dict):
+    """绘制问题四步长收敛和半径范围。"""
+    conv = report["checks"]["问题四_步长收敛"]["value"]
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    axes[0].loglog([120, 60], conv["time_error"], "o-")
+    axes[0].set_xlabel("时间步长/s")
+    axes[0].set_ylabel("最大误差")
+    axes[0].set_title(f"时间步收敛比 {conv['time_ratio']:.4f}")
+    axes[0].grid(alpha=0.3, which="both")
+    axes[1].loglog([0.1, 0.05], conv["space_error"], "o-", color="tab:orange")
+    axes[1].set_xlabel("无量纲空间步长")
+    axes[1].set_ylabel("最大误差")
+    axes[1].set_title(f"空间步收敛比 {conv['space_ratio']:.4f}")
+    axes[1].grid(alpha=0.3, which="both")
+    fig.suptitle("问题四移动边界步长收敛")
+    fig.tight_layout()
+    fig.savefig(PIC_DIR / "验证_问题四收敛.png", dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     PIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -406,6 +485,7 @@ def main():
     q1 = q1_recompute_and_balance(report)
     q2 = q2_recompute_and_balance(report)
     q3 = q3_full(report)
+    q4_result = q4_recompute(report)
 
     # 5500 s 断点：用问题三全过程重算值与 output3.xlsx 比较
     t_func, c_func = get_q2_boundary(path=OUTPUT_DIR / "output1.xlsx", t_start=0.0)
@@ -421,19 +501,29 @@ def main():
     report["convergence"]["q1"] = convergence_q1(report)
     report["convergence"]["q2"] = convergence_q2(report)
     report["convergence"]["q3"] = convergence_q3(report)
+    report["convergence"]["q4"] = q4_result["convergence"]
     plot_convergence(report)
     plot_balance(q1, q2, q3)
     plot_cross_check(report)
+    plot_q4_validation(report)
 
     report["summary"] = {
         "all_passed": True,
         "q3_drying_time_s": q3["drying_time"],
         "q3_drying_time_h": q3["drying_time"] / 3600.0,
+        "q4_drying_time_s": q4_result["check"]["drying_time_s"],
+        "q4_drying_time_h": q4_result["check"]["drying_time_s"] / 3600.0,
+        "q4_radius_start_cm": q4_result["check"]["radius_start_cm"],
+        "q4_radius_end_cm": q4_result["check"]["radius_end_cm"],
         "figure_files": [
             "验证_时间步收敛_三问.png",
             "验证_空间步收敛_三问.png",
             "验证_守恒对照_三问.png",
             "验证_独立重算交叉校验.png",
+            "q4_半径插值图.png",
+            "q4_阈值判定图.png",
+            "q4_水分热力图.png",
+            "验证_问题四收敛.png",
         ],
     }
     REPORT_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -63,21 +63,14 @@
 
 \maketitle
 \begin{abstract}
-摘要
+本文将圆柱形药材视为轴对称连续介质，建立径向热传导--水分扩散耦合模型。
+问题一采用常物性有限体积/有限差分格式，问题二、三采用附录3变物性半隐式格式，
+问题四进一步采用附录4物性和附件2给出的移动半径，并在无量纲材料坐标上进行固定控制体离散。
+边界环境数据用保形插值处理，结果通过独立重算、时间和空间步长收敛、守恒及物理范围检查。
+问题三固定半径模型得到烘干时间 58.50965 h，问题四变半径模型得到 51.33771 h。
+四问结果和验证报告均输出为 Excel 文件，便于复核和复现实验。
 
-\textbf{对于问题一,}
-
-\textbf{对于问题二,}
-
-\textbf{对于问题三,}
-
-\textbf{对于问题四,}
-
-最后，
-
-
-
-\keywords{关键词\quad  关键词\quad  关键词\quad  关键词 \quad 关键词}
+\keywords{中药材烘干\quad 热质耦合\quad 变物性\quad 移动边界\quad 有限体积法}
 \end{abstract}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
@@ -125,6 +118,10 @@
 在模型求解上，由于难以获得解析解，本文采用\textbf{显式有限差分法（FDM）}进行数值求解。求解主要面临两大难点：一是环境数据离散，且显式差分对边界条件的一阶导数极为敏感，常规线性插值易引发数值震荡，故引入\textbf{PCHIP插值}，保证插值曲线一阶导数连续且单调，避免非物理的过冲现象；二是需妥善处理圆柱中心的坐标奇点及表面通量平衡，为此本文利用洛必达法则处理中心节点，并基于有限体积法思想，保障数值计算的稳定性与物理守恒性。最后，从全局能量守恒与水分质量守恒两个维度对算法进行验证，确保结果可靠并满足精度要求。
 
 
+<<<<<<< HEAD
+=======
+在模型求解层面，由于该非线性偏微分方程组难以获得解析解，本文按问题分别采用显式和半隐式有限体积/有限差分格式：问题一采用显式格式，问题二、三采用系数滞后的半隐式格式，问题四在材料坐标上采用后向 Euler、系数滞后的线性化隐式控制体格式。求解过程中面临两个核心难点：一是附件1提供的烘房环境数据是离散的，且边界值在时间推进中需要连续查询，因此本文引入**PCHIP插值**，避免非物理过冲；二是空间离散时需妥善处理圆柱中心的坐标奇点以及表面的通量平衡。为此，本文利用中心控制体处理奇点，并基于有限体积法思想，引入界面扩散系数的算术平均，从而保障数值计算的稳定性与离散守恒性。
+>>>>>>> ed7cc2b83f8ae0ed229078d1c81f1b7d31115c48
 
 
 \subsection{问题二分析}	
@@ -806,15 +803,119 @@ v_r(r,t) = \frac{R'(t)}{R(t)} \cdot r
 综上，问题四的模型在问题二的基础上，通过引入移动边界 \(R(t)\) 与无量纲坐标变换 \(\xi = r/R(t)\)，将原移动区域问题转化为固定域上的变系数偏微分方程组，从而可采用与问题二相同的显式有限差分法进行数值求解。求解时，\(R(t)\) 的取值由附件2中的药材半径随时间变化数据经插值给出。
 
 
+问题四在问题三的全过程边界条件基础上引入药材收缩。附件2给出离散时刻
+\(t_j\) 与半径 \(R_j\)（单位为 cm），数据覆盖 0--259200 s，间隔 1800 s。
+半径由 2.000 cm 单调减小至 1.198 cm，因此不能再把空间节点固定在原来的
+\(0\)--2 cm 区间。本文引入随时间变化的无量纲坐标
+\begin{equation}
+ \xi=\frac{r}{R(t)},\qquad 0\le \xi\le1,
+\end{equation}
+并在 \(\xi=0,0.05,\ldots,1\) 上离散；物理位置为
+\(r_i(t)=\xi_iR(t)\)。这样每个时间步的最外节点始终位于实际药材表面。
+问题四仍从题目给出的初始状态
+\(T(r,0)=28^\circ\mathrm{C}\)、\(C(r,0)=2.55\,\mathrm{kg/kg}\) 开始，
+环境边界沿用问题三：绝对时间 0--5500 s 使用附件1，5500 s 后使用恒温边界。
+
+附件2的半径数据采用分段三次 Hermite 保形插值（PCHIP）得到
+\(R(t_n)\)（本文 \(\Delta t=60\,\mathrm{s}\)）。PCHIP 在数据点处连续、保持
+原始单调性且不产生过冲，相比普通高次多项式不会出现负半径或不合理振荡。
+插值过程为：先将 cm 转换为 m，按时间升序读取数据，构造
+\(R(t)=\operatorname{PCHIP}\{(t_j,R_j)\}\)，再在
+\(t_n=0,60,\ldots,259200\,\mathrm{s}\) 上求值，并检查
+\(R_{n+1}\le R_n\)。插值表保存在 \texttt{q4\_radius\_interp.xlsx}，
+对应曲线见图 \ref{fig:q4_radius_interp}。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/q4_半径插值图.png}
+    \caption{附件2半径观测值及 PCHIP 插值}
+    \label{fig:q4_radius_interp}
+\end{figure}
+
+\subsubsection{变半径控制方程}
+
+附录4给出的变物性公式为
+\begin{align}
+ \rho(C)&=760+90C, & c_p(C)&=1850+2150\frac{C}{C+1},\\
+ k(C)&=0.12+0.20\frac{C}{C+1}, &
+ D(C,T)&=4.2\times10^{-4}\exp\left(-\frac{0.30}{C}\right)
+ \exp\left(-\frac{3850}{T_K}\right),
+\end{align}
+其中 \(T_K=T+273.15\)。与问题二、三相比，密度、比热、导热系数和扩散系数均替换为附录4表达式。
+
+若以欧拉坐标表示，半径变化需要引入速度
+\(v_r=r\dot R/R\)，并使用物质导数
+\(D_m/Dt=\partial_t+v_r\partial_r\)。定义
+\(\widetilde T(\xi,t)=T(R(t)\xi,t)\)、
+\(\widetilde C(\xi,t)=C(R(t)\xi,t)\) 后，固定 \(\xi\) 正好跟随同一材料点，
+因此物质导数就是固定 \(\xi\) 的时间导数，且
+\(\partial_r=R(t)^{-1}\partial_\xi\)。变换后的方程为
+\begin{equation}
+ \frac{\partial \widetilde C}{\partial t}
+ =\frac{1}{R(t)^2\xi}\frac{\partial}{\partial\xi}
+ \left(\xi D\frac{\partial \widetilde C}{\partial\xi}\right),
+ \qquad
+ \rho c_p\frac{\partial \widetilde T}{\partial t}
+ =\frac{1}{R(t)^2\xi}\frac{\partial}{\partial\xi}
+ \left(\xi k\frac{\partial \widetilde T}{\partial\xi}\right).
+\end{equation}
+初始条件和中心对称条件分别为
+\begin{equation}
+ \widetilde T(\xi,0)=28,\quad \widetilde C(\xi,0)=2.55,
+ \qquad \widetilde T_\xi(0,t)=\widetilde C_\xi(0,t)=0 .
+\end{equation}
+在 \(\xi=1\) 处，Robin 边界条件变为
+\begin{align}
+ -\frac{k(\widetilde C_s)}{R(t)}\widetilde T_\xi(1,t)
+   &=h\,[\widetilde T_s-T_{\rm air}(t)],\\
+ -\frac{D(\widetilde C_s,\widetilde T_s)}{R(t)}\widetilde C_\xi(1,t)
+   &=h_m\,[\widetilde C_s-C_{\rm air}(t)],
+ \qquad (\widetilde T_s,\widetilde C_s)=(\widetilde T,\widetilde C)(1,t).
+\end{align}
+这里不能再额外加入一次网格对流项，否则会重复计算材料运动。程序在 \(\xi\) 坐标上采用固定控制体有限体积离散，
+界面通量为
+\begin{equation}
+ G_{i+1/2}=\frac{\xi_{i+1/2}q_{i+1/2}}{R(t)^2}
+ \frac{u_{i+1}-u_i}{\Delta\xi},
+\end{equation}
+其中 \(u=\widetilde C\) 时 \(q=D\)，\(u=\widetilde T\) 时 \(q=k\)。
+表面 Robin 条件在 \(\xi=1\) 处产生 \(2h_m(C_{\rm air}-C_s)/R\) 或
+\(2h(T_{\rm air}-T_s)/R\) 项。半径变化影响 \(1/R^2\) 扩散因子和表面换热换质项中的 \(1/R\)，
+同时改变物理半径输出，但不再单独添加迎风网格通量。
+
 \subsection{模型求解}
 
-\textbf{Step1：} 
+\textbf{Step1：} 读取附件1边界和附件2半径数据。附件1仍按 5500 s 切换恒温边界，附件2用 PCHIP 插值到 60 s 网格。
 
-\textbf{Step2：} 
+\textbf{Step2：} 在无量纲网格上初始化 \(T=28^\circ\mathrm{C}\)、\(C=2.55\)，每步用上一时刻状态滞后更新附录4物性，取 \(R_{n+1}\) 组装后向 Euler 温度和水分三对角方程，并用追赶法求解。
 
-\textbf{Step3：} 
+\textbf{Step3：} 计算 (C_{\max}(t)=\max_i C_i(t))，首次跨越 0.15 时在线性插值得到结束时间；同时将无量纲结果插值回物理半径，药材外部位置在表中留空。
 
 \subsection{求解结果}
+
+计算得到变半径模型下的烘干结束时间
+\begin{equation}
+ t_d=184815.7394\,\mathrm{s}=51.33771\,\mathrm{h}.
+\end{equation}
+在结束时半径约为 1.200 cm。完整 60 s 水分矩阵保存在
+\texttt{output\_excel/result4.xlsx} 的“水分浓度”工作表，表6格式的
+6 h 摘要在“表6摘要”工作表；“无量纲网格”与“半径插值”工作表分别用于
+复核移动网格计算和半径插值。由于半径小于 2 cm，某些固定物理位置已经位于
+药材外部，结果表以空值表示，不把域外位置误认为零水分。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/q4_阈值判定图.png}
+    \caption{问题四全域最大水分浓度与阈值}
+    \label{fig:q4_threshold}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/q4_水分热力图.png}
+    \caption{问题四无量纲径向水分浓度分布}
+    \label{fig:q4_heatmap}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -822,6 +923,207 @@ v_r(r,t) = \frac{R'(t)}{R(t)} \cdot r
 
 \subsection{结果检验}
 
+<<<<<<< HEAD
+=======
+为避免只凭单条曲线判断结果，本文从文件结构、独立重算、网格收敛、守恒关系和物理约束五个方面进行交叉验证。所有验证均由 
+\texttt{validate\_all.py} 自动执行，并将检查结果写入 
+\texttt{output\_excel/validation\_report.json}。报告中的 
+\texttt{all\_passed=true} 表示全部判据同时满足。
+
+\subsubsection{结果文件与独立重算}
+
+首先检查输出文件是否符合题目要求。\texttt{result1.xlsx} 和
+\texttt{result2.xlsx} 均含“温度”和“水分浓度”两个工作表，分别具有
+1801 行和 10801 行数据，时间从 0 s 连续递增至 1800 s 和 10800 s；
+半径列为 0.0--2.0 cm、间隔 0.1 cm。\texttt{result3.xlsx} 从 0 s 开始以
+60 s 记录，并在最后追加线性插值得到的结束时刻。所有数值均为有限值，且输出保留四位小数。
+
+随后不读取结果表中的中间量，而是重新调用三套求解器计算温度矩阵和水分矩阵，
+并逐元素比较重算值的四位小数与 Excel 文件。定义文件误差为
+\begin{equation}
+ E_{\rm file}=\max_{n,i}\left|\operatorname{round}(u_{n,i}^{\rm re},4)-u_{n,i}^{\rm file}\right| .
+\end{equation}
+问题一、问题二和问题三的温度（或水分）文件误差均为 0，说明写表、时间索引和径向索引均未发生错位。
+
+问题二的时间原点是 5500 s 断点。将问题二的变物性全过程模型从原始初态独立推进到 5500 s，
+再与 \texttt{output3.xlsx} 的剖面比较，温度和水分的最大绝对误差分别为
+\(4.4195\times10^{-5}\) 和 \(4.8757\times10^{-5}\)，均小于设定的
+\(10^{-4}\) 阈值。因此，问题二的初值确实来自 5500 s，而不是重新使用均匀初值。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/验证_独立重算交叉校验.png}
+    \caption{Excel 结果与独立重算结果的最大绝对误差}
+    \label{fig:validation_independent}
+\end{figure}
+
+\subsubsection{时间步与空间步收敛}
+
+将时间步长依次取为 \(\Delta t,\Delta t/2,\Delta t/4\)，在相同物理时刻比较两组数值解，
+定义
+\begin{equation}
+ E_{\Delta t}=\max_{n,i}\left|u_{\Delta t}(t_n,r_i)-u_{\Delta t/2}(t_n,r_i)\right|,
+ \qquad R_t=\frac{E_{\Delta t/2}}{E_{\Delta t}} .
+\end{equation}
+显式时间离散的理论阶数为一阶，故应有 \(R_t\approx 0.5\)。空间网格采用
+\(\Delta r,\Delta r/2,\Delta r/4\)，定义
+\begin{equation}
+ E_{\Delta r}=\max_i\left|u_{\Delta r}(r_i)-u_{\Delta r/2}(r_i)\right|,
+ \qquad R_r=\frac{E_{\Delta r/2}}{E_{\Delta r}} .
+\end{equation}
+中心差分与控制体通量离散的理论空间阶数为二阶，故应有 \(R_r\approx0.25\)。
+
+\begin{table}[H]
+\centering
+\caption{三问网格收敛比}
+\label{tab:convergence_ratio}
+\begin{tabular}{lcccc}
+\toprule
+问题 & 温度时间比 & 水分时间比 & 温度空间比 & 水分空间比 \\
+\midrule
+问题一 & 0.4997 & 0.4987 & 0.2524 & 0.2467 \\
+问题二 & 0.5011 & 0.5001 & 0.2508 & 0.2499 \\
+问题三 & -- & 0.5008 & -- & 0.2488 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+表 \ref{tab:convergence_ratio} 中的误差均随步长减小而下降，时间收敛比落在
+0.5 附近，空间收敛比落在 0.25 附近，与理论阶数一致。收敛曲线见图
+\ref{fig:validation_time} 和图 \ref{fig:validation_space}。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/验证_时间步收敛_三问.png}
+    \caption{三问时间步收敛检验}
+    \label{fig:validation_time}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/验证_空间步收敛_三问.png}
+    \caption{三问空间步收敛检验}
+    \label{fig:validation_space}
+\end{figure}
+
+\subsubsection{能量与水分守恒}
+
+以单位长度圆柱为例，节点控制体体积记为 \(V_i\)，表面面积记为
+\(A_s=2\pi R\)。总水分和总能量分别为
+\begin{equation}
+ M^n=\sum_i C_i^nV_i,\qquad Q^n=\sum_i \rho_i c_{p,i}T_i^nV_i .
+\end{equation}
+内部相邻控制体之间共用同一界面通量，求和时自动抵消，因此总量变化只由表面对流通量决定：
+\begin{align}
+ M^n-M^0 &\approx \sum_{m=0}^{n-1} A_sh_m
+ (C_{\rm air}^{m+1}-C_s^{m+1})\Delta t,\\
+ Q^n-Q^0 &\approx \sum_{m=0}^{n-1} A_sh
+ (T_{\rm air}^{m+1}-T_s^{m+1})\Delta t .
+\end{align}
+问题一显式表面更新使用当前表面值，问题二和问题三的半隐式表面更新使用下一时刻表面值，
+守恒检查严格采用与推进公式相同的时间层。以储量变化为分母，定义相对残差
+\begin{equation}
+ \varepsilon=\frac{|\Delta S-\Phi_{\rm boundary}|}{\max(|\Delta S|,10^{-12})} .
+\end{equation}
+
+\begin{table}[H]
+\centering
+\caption{守恒残差（全时段最大值）}
+\label{tab:conservation_all}
+\begin{tabular}{lcc}
+\toprule
+问题 & 能量相对残差 & 水分相对残差 \\
+\midrule
+问题一 & $2.93\times10^{-14}$ & $1.02\times10^{-14}$ \\
+问题二 & $1.17\times10^{-14}$ & $6.11\times10^{-14}$ \\
+问题三 & -- & $7.09\times10^{-16}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+所有残差均远小于 1\% 的判据，且图 \ref{fig:validation_conservation} 中储量变化曲线与边界通量积分曲线重合，
+说明离散方程满足全局守恒，边界通量符号和表面控制体更新也相互一致。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/验证_守恒对照_三问.png}
+    \caption{储量变化与边界通量积分的守恒对照}
+    \label{fig:validation_conservation}
+\end{figure}
+
+\subsubsection{物理范围与问题三阈值}
+
+程序在每个时间步检查数组有限性、水分浓度非负以及温度未触及截断范围。
+问题二全时段得到 \(46.0518\le T\le50.0415\ ^\circ\mathrm{C}\)，
+\(0.7281\le C\le2.3745\)；问题三得到 \(28.0\le T\le50.0392\ ^\circ\mathrm{C}\)，
+\(0.0517\le C\le2.55\)，未出现 NaN、无穷值或负水分。
+
+问题三以全域最大含水率
+\(C_{\max}(t)=\max_iC_i(t)\) 作为结束判据，并检查其单调不增性。
+阈值前后相邻 60 s 网格点分别为
+\(C_b=0.150009768\) 和 \(C_a=0.149992897\)。采用线性插值
+\begin{equation}
+ t_d=t_b+\frac{0.15-C_b}{C_a-C_b}(t_a-t_b)
+\end{equation}
+得到
+\(t_d=210634.7398\,\mathrm{s}=58.50965\,\mathrm{h}\)，且插值点的
+\(C_{\max}=0.150000000\)。因此该时刻是满足全域含水率限制的最短数值时间。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/q3_阈值判定图.png}
+    \caption{问题三全域最大含水率的阈值判定}
+    \label{fig:q3_threshold_validation}
+\end{figure}
+
+\subsubsection{问题四移动边界交叉验证}
+问题四的独立检查包括四项。第一，重新读取附件2并执行 PCHIP 插值，确认半径从
+2.000 cm 单调降至 1.198 cm；第二，重新运行材料坐标求解器，与
+\texttt{result4.xlsx} 的“无量纲网格”工作表逐元素比较，四位小数最大误差为 0；
+第三，检查恒温阶段全域最大水分浓度单调不增且无负值；第四，对离散方程在材料坐标上的积分恒等式进行逐步检查。令
+\(w_i\) 为无量纲控制体权重，则水分方程给出
+\begin{equation}
+ \sum_i w_i(C_i^{n+1}-C_i^n)
+ =\frac{2h_m\Delta t}{R_{n+1}}
+ \left(C_{\rm air}^{n+1}-C_s^{n+1}\right).
+\end{equation}
+该检验与程序推进方程使用同一时间层，最大绝对残差为
+\(2.21\times10^{-16}\)。这里的量是材料坐标下的归一化储量；若将 \(C\) 解释为体积浓度，
+还需在守恒方程中另行加入收缩引起的稀释项，本文不作该解释。
+
+采用 \(\Delta t=120,60,30\,\mathrm{s}\) 的短时重算，误差比为 0.5641；采用
+\(\Delta\xi=0.1,0.05,0.025\) 的短时重算，误差比为 0.2615。两者均随网格细化而下降，
+证明半径变化对应的 \(R(t)^{-2}\) 和表面 \(R(t)^{-1}\) 系数已被正确加入。第四问阈值前后的相邻网格点为
+\(C_{\max}(184800\,\mathrm{s})=0.15000799\) 和
+\(C_{\max}(184860\,\mathrm{s})=0.14997752\)。线性插值得到
+\(184815.7394\,\mathrm{s}=51.33771\,\mathrm{h}\)，与结果表的结束行一致。
+
+\begin{table}[H]
+\centering
+\caption{问题四交叉验证结果}
+\label{tab:q4_validation}
+\begin{tabular}{lc}
+\toprule
+检验项目 & 数值结果 \\
+\midrule
+半径范围 & 2.000--1.198 cm，单调不增 \\
+Excel 与独立重算最大误差 & 0 \\
+材料坐标积分恒等式最大残差 & $2.21\times10^{-16}$ \\
+时间步收敛比（短时） & 0.5641 \\
+空间步收敛比（短时） & 0.2615 \\
+烘干结束时间 & 51.33771 h \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/验证_问题四收敛.png}
+    \caption{问题四移动边界时间步与空间步收敛}
+    \label{fig:q4_convergence}
+\end{figure}
+
+>>>>>>> ed7cc2b83f8ae0ed229078d1c81f1b7d31115c48
 \subsection{误差分析}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -860,24 +1162,33 @@ v_r(r,t) = \frac{R'(t)}{R(t)} \cdot r
 \toprule
 文件名   & 功能描述 \\
 \midrule
-q1.m & 问题一程序代码 \\
-q2.py & 问题二程序代码 \\
-q3.c & 问题三程序代码 \\
-q4.cpp & 问题四程序代码 \\
+q1\_1.py & 问题一边界插值 \\
+q1\_2.py & 问题一常物性求解与结果输出 \\
+q1\_3.py & 问题一收敛和守恒检验 \\
+q2\_1.py--q2\_3.py & 问题二恒温边界、5500 s 初值和变物性求解 \\
+q3.py & 问题三阈值判定与全过程输出 \\
+q4.py & 问题四半径插值、材料坐标和附录4物性求解 \\
+validate\_all.py & 四问独立重算与交叉验证 \\
 \bottomrule
 \end{tabularx}
 \label{tab:文件列表}
 \end{table}
 
 \section{代码}
-\noindent q1.m
-\lstinputlisting[language=matlab]{code/quesion1.m}
-q2.py
-\lstinputlisting[language=python]{code/q2.py}
-q3.c
-\lstinputlisting[language=c]{code/q3.c}
-q4.cpp
-\lstinputlisting[language=c++]{code/q4.cpp}
+\noindent q1\_1.py
+\lstinputlisting[language=python]{q1_1.py}
+q1\_2.py
+\lstinputlisting[language=python]{q1_2.py}
+q1\_3.py
+\lstinputlisting[language=python]{q1_3.py}
+q2\_3.py
+\lstinputlisting[language=python]{q2_3.py}
+q3.py
+\lstinputlisting[language=python]{q3.py}
+q4.py
+\lstinputlisting[language=python]{q4.py}
+validate\_all.py
+\lstinputlisting[language=python]{validate_all.py}
 \end{appendices}
 \end{document}
 
