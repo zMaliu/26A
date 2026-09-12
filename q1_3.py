@@ -1,9 +1,13 @@
 # 1. 时间步收敛  2. 空间步长收敛  3. 守恒检查
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import PchipInterpolator
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = BASE_DIR / 'output_excel'
+PIC_DIR = BASE_DIR / 'pic'
 
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei',
                                    'Arial Unicode MS', 'PingFang SC']
@@ -12,18 +16,16 @@ plt.rcParams['axes.unicode_minus'] = False
 
 # 读取边界条件，返回 T_air(t), C_air(t)
 def get_boundary_funcs():
-    try:
-        df = pd.read_excel('output1.xlsx')
-        t_orig = df.iloc[:, 0].values.astype(float)
-        T_orig = df.iloc[:, 1].values.astype(float)
-        C_orig = df.iloc[:, 2].values.astype(float)
-        T_func = PchipInterpolator(t_orig, T_orig, extrapolate=True)
-        C_func = PchipInterpolator(t_orig, C_orig, extrapolate=True)
-        print('已读取 output1.xlsx 作为边界条件')
-    except Exception:
-        print('未找到 output1.xlsx，使用常量边界：T_air=80, C_air=0.1')
-        T_func = lambda t: np.full_like(np.asarray(t, dtype=float), 80.0)
-        C_func = lambda t: np.full_like(np.asarray(t, dtype=float), 0.1)
+    path = OUTPUT_DIR / 'output1.xlsx'
+    df = pd.read_excel(path)
+    t_orig = df.iloc[:, 0].values.astype(float)
+    T_orig = df.iloc[:, 1].values.astype(float)
+    C_orig = df.iloc[:, 2].values.astype(float)
+    if np.any(np.diff(t_orig) <= 0):
+        raise ValueError('output1.xlsx 时间必须严格递增')
+    T_func = PchipInterpolator(t_orig, T_orig, extrapolate=False)
+    C_func = PchipInterpolator(t_orig, C_orig, extrapolate=False)
+    print(f'已读取 {path} 作为边界条件')
     return T_func, C_func
 
 # 求解 PDE，返回 t, r, T, C
@@ -86,14 +88,15 @@ def solve_pde(dt, dr, r_max=0.02, t_end=1800.0,
         D_01 = D_of_C(0.5 * (C[n, 0] + C[n, 1]))
         C[n + 1, 0] = C[n, 0] + 4.0 * D_01 * dt / dr**2 * (C[n, 1] - C[n, 0])
 
-        # 表面节点
-        r_surf = (Nr - 1) * dr
-        A = 1.0 + dr / (2.0 * r_surf)
-
-        # 温度：表面节点（不变）
-        T[n + 1, -1] = (T[n, -1]
-                        + (2.0 * alpha * dt / dr**2) * (T[n, -2] - T[n, -1])
-                        - (2.0 * dt * h / (rho * Cp * dr)) * A * (T[n, -1] - T_air_next))
+        # 温度：表面控制体
+        i_s = Nr - 1
+        V_factor = i_s - 0.25
+        T[n + 1, -1] = T[n, -1] + dt * (
+            2.0 * (i_s - 0.5) * k * (T[n, i_s - 1] - T[n, i_s])
+            / (rho * Cp * V_factor * dr**2)
+            + 2.0 * i_s * h * (T_air_next - T[n, i_s])
+            / (rho * Cp * V_factor * dr)
+        )
 
         # 水分：表面节点（有限体积，严格守恒）
         i_s = Nr - 1
@@ -145,6 +148,12 @@ def verify_time_step():
     print(f'     温度收敛比 = {err_T_05_025/err_T_1_05:.3f}')
     print(f'     水分收敛比 = {err_C_05_025/err_C_1_05:.3f}')
     print('  3) 温度误差 < 0.1°C，水分误差 < 0.01')
+    ratio_T = err_T_05_025 / err_T_1_05
+    ratio_C = err_C_05_025 / err_C_1_05
+    if not (err_T_05_025 < err_T_1_05 and err_C_05_025 < err_C_1_05
+            and 0.35 < ratio_T < 0.65 and 0.35 < ratio_C < 0.65
+            and err_T_1_05 < 0.1 and err_C_1_05 < 0.01):
+        raise AssertionError('问题一时间步收敛未通过')
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
@@ -177,7 +186,7 @@ def verify_time_step():
     axes[2].grid(alpha=0.3, which='both')
 
     plt.tight_layout()
-    plt.savefig('验证_时间步收敛.png', dpi=300, bbox_inches='tight')
+    plt.savefig(PIC_DIR / '验证_时间步收敛.png', dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
 
@@ -220,6 +229,12 @@ def verify_space_step():
     print(f'     温度收敛比 = {err_T_05_025/err_T_1_05:.3f}')
     print(f'     水分收敛比 = {err_C_05_025/err_C_1_05:.3f}')
     print('  3) 温度差异 < 0.05°C，水分差异 < 0.005')
+    ratio_T = err_T_05_025 / err_T_1_05
+    ratio_C = err_C_05_025 / err_C_1_05
+    if not (err_T_05_025 < err_T_1_05 and err_C_05_025 < err_C_1_05
+            and 0.15 < ratio_T < 0.35 and 0.15 < ratio_C < 0.35
+            and err_T_1_05 < 0.05 and err_C_1_05 < 0.005):
+        raise AssertionError('问题一空间步收敛未通过')
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
@@ -252,7 +267,7 @@ def verify_space_step():
     axes[2].grid(alpha=0.3, which='both')
 
     plt.tight_layout()
-    plt.savefig('验证_空间步长收敛.png', dpi=300, bbox_inches='tight')
+    plt.savefig(PIC_DIR / '验证_空间步长收敛.png', dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
 
@@ -289,12 +304,11 @@ def verify_conservation():
     T_air_arr = np.array([float(T_func(tt)) for tt in t])
     C_air_arr = np.array([float(C_func(tt)) for tt in t])
 
-    # 表面热流、质流
-    q_flux = h * A_surf * (T_air_arr - T[:, -1])
-    m_flux = hm * A_surf * (C_air_arr - C[:, -1])
-
-    Q_flux_int = np.concatenate([[0.0], np.cumsum(q_flux[:-1] * dt)])
-    M_flux_int = np.concatenate([[0.0], np.cumsum(m_flux[:-1] * dt)])
+    # 表面通量取 n+1 时刻环境值和 n 时刻表面值
+    q_step = h * A_surf * (T_air_arr[1:] - T[:-1, -1])
+    m_step = hm * A_surf * (C_air_arr[1:] - C[:-1, -1])
+    Q_flux_int = np.concatenate([[0.0], np.cumsum(q_step * dt)])
+    M_flux_int = np.concatenate([[0.0], np.cumsum(m_step * dt)])
 
     Q_change = Q - Q[0]
     M_change = M - M[0]
@@ -310,6 +324,8 @@ def verify_conservation():
     print('  1) 两条累积曲线应基本重合')
     print('  2) 相对误差应 < 1%~5%')
     print('  3) 若误差快速累积，检查边界离散或体积权重')
+    if rel_err_Q[-1] >= 0.01 or rel_err_M[-1] >= 0.01:
+        raise AssertionError('问题一守恒检验未通过')
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
@@ -338,7 +354,7 @@ def verify_conservation():
     axes[2].grid(alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig('验证_守恒检查.png', dpi=300, bbox_inches='tight')
+    plt.savefig(PIC_DIR / '验证_守恒检查.png', dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
 

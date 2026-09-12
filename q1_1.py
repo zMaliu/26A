@@ -2,10 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import PchipInterpolator
+from pathlib import Path
 
 # 文件路径
-input_file = '附件1.xlsx'  
-output_file = 'output1.xlsx'
+BASE_DIR = Path(__file__).resolve().parent
+input_file = BASE_DIR / 'input_excel' / '附件1.xlsx'
+output_file = BASE_DIR / 'output_excel' / 'output1.xlsx'
+output_file.parent.mkdir(parents=True, exist_ok=True)
 
 # 读取Excel（前三列：时间, 温度, 水分浓度）
 df = pd.read_excel(input_file, header=0)
@@ -16,7 +19,7 @@ moist_orig = df.iloc[:, 2].values.astype(float)
 # 生成步长为1s的时间序列
 t_new = np.arange(t_orig.min(), t_orig.max() + 0.1, 1.0)
 
-# PCHIP插值（保形，防止过冲导致物理异常）
+# 保形插值，避免过冲
 temp_new = PchipInterpolator(t_orig, temp_orig)(t_new)
 moist_new = PchipInterpolator(t_orig, moist_orig)(t_new)
 
