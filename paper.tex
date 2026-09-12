@@ -1,70 +1,61 @@
 %! Mode:: "TeX:UTF-8"
 %! TEX program = xelatex
 \PassOptionsToPackage{quiet}{xeCJK}
-\documentclass[withoutpreface,bwprint]{cumcm_thesis} % cumcm的模板文件
+\documentclass[withoutpreface,bwprint]{cumcm_thesis}
+
+% ====== 基础工具 ======
 \usepackage{etoolbox}
-\usepackage{longtable}
+% \usepackage{xltabular}   % 已包含 longtable 和 tabularx
+\usepackage{tabularx}
 \BeforeBeginEnvironment{tabular}{\zihao{-5}}
-\usepackage[numbers,sort&compress]{natbib}  % 文献管理宏包
-\usepackage[framemethod=TikZ]{mdframed}  % 框架宏包
-\usepackage{url}  % 网页链接宏包
-\usepackage{subcaption}  % 子图宏包
-\usepackage{graphicx} % 必需宏包
-\usepackage{xltabular}
-\usepackage{textcomp} % 或 \usepackage{gensymb}
-\usepackage{algorithm}
-\usepackage{algorithmic}  % 或者 \usepackage{algpseudocode}
-\usepackage[version=4]{mhchem}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 
+% ====== 参考文献 ======
+\usepackage[numbers,sort&compress]{natbib}
+
+% ====== 数学与单位 ======
+\usepackage{amsmath}
+%\usepackage{siunitx}
 \usepackage{xcolor}
 
+% ====== 化学 ======
+% \usepackage[version=4]{mhchem}
 
-% 可能是代码的宏
-\usepackage{pifont}
-\usepackage{listings}
-\usepackage{xcolor}
-\lstset{
-    columns=fixed,       
-    numbers=left,                                        % 在左侧显示行号
-    frame=none,                                          % 不显示背景边框
-    backgroundcolor=\color[RGB]{245,245,244},            % 设定背景颜色
-    keywordstyle=\color[RGB]{40,40,255},                 % 设定关键字颜色
-    numberstyle=\color{darkgray},           % 设定行号格式
-    commentstyle=\color[RGB]{0,96,96},                % 设置代码注释的格式
-    stringstyle=\color[RGB]{128,0,0},   % 设置字符串格式
-    showstringspaces=false, 
-    basicstyle=\ttfamily,
-    language=matlab,                                    
-}
-\lstset{breaklines}%自动将长的代码行换行排版
+% ====== 图片与网页 ======
+\usepackage{url}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{textcomp}
 
-\lstset{extendedchars=false}%解决代码跨页时，章节标题，页眉等汉字不显示的问题
+% ====== 字体与中文 ======
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{TeX Gyre Termes}
+% \setCJKmainfont{SimSun}
 
+% ====== 表格 ======
 \usepackage{array}
 \usepackage{booktabs}
-\usepackage{siunitx}
 \usepackage{caption}
-\usepackage{makecell}   % 表头自动换行
+% \usepackage{makecell}
 
-\newcolumntype{C}{>{\centering\arraybackslash}X} % 居中对齐的表
-\newcolumntype{R}{>{\raggedleft\arraybackslash}X} % 右对齐的表
-\newcolumntype{L}{>{\raggedright\arraybackslash}X} % 左对齐的表
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+% ====== 论文信息 ======
+\title{全国大学生数学建模竞赛论文模板}
+\tihao{}
+\baominghao{}
+\schoolname{}
+\membera{}
+\memberb{}
+\memberc{}
+\supervisor{}
+\yearinput{}
+\monthinput{}
+\dayinput{}
 
 
-
-\title{全国大学生数学建模竞赛论文模板}  % 论文标题
-\tihao{}  % 题号
-\baominghao{}  % 报名号
-\schoolname{}  % 学校
-\membera{}  % 队员a
-\memberb{}  % 队员b
-\memberc{}  % 队员c
-\supervisor{}  % 指导老师
-\yearinput{}% 年
-\monthinput{}% 月
-\dayinput{}% 日
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 正文
@@ -97,8 +88,6 @@
 \section{问题重述} % section:节，栏
 \subsection{问题背景} % subsection：分段
 
-
-
 中药材干燥是影响成品品质的重要工序，热风烘干是常用方式之一。该过程通常分为预热平衡与恒温干燥两个阶段，通过调节烘房温湿环境实现药材脱水。烘干时，工艺参数若选择不合理，会造成干燥效率低、能耗高、品质波动等问题；传统试验优化又存在成本高、周期长等局限。为了解决这些问题，本文将采用数理分析与数值仿真方法，研究中药材烘干过程中的变化规律。
 
 
@@ -128,21 +117,21 @@
 
 \section{问题分析}
 \subsection{问题一分析}
-对于问题一，问题一要求在预热平衡阶段，建立圆柱形中药材内部温度与水分浓度时空演化的数学模型，并计算特定时刻与径向位置的数据。这本质上是一个“给定外部热湿环境边界后，求解药材内部非稳态传热传质耦合偏微分方程的初边值问题”。
 
-首先，从物理机理层面分析。中药材内部存在细胞、孔隙、毛细通道与固体骨架，结构极其复杂。由于题目提供的密度、比热容、导热系数与有效扩散系数均为宏观等效系数，且考虑到孔隙尺度CFD模型所需条件尚不充分，本文采取宏观连续介质假设，将药材划分为许多微小控制体，每个控制体用平均温度与平均含水率来描述，从而建立宏观连续介质模型。
+对于问题一，要求在预热平衡阶段，建立圆柱形中药材内部温度与水分浓度时空演化的数学模型，本质上是一个给定外部热湿环境边界后，求解药材内部非稳态传热传质耦合偏微分方程的初边值问题。
 
-其次，针对几何与传热传质特征进行合理简化。考虑到药材为圆柱形，且初始温度与含水率分布均匀，忽略轴向与圆周方向的变化，可将三维问题退化为沿半径方向的**一维径向模型**。在控制方程建立上，热量传递以导热为主，遵循傅里叶定律与能量守恒；水分迁移以扩散为主，遵循有效Fick定律与质量守恒。需要注意的是，水分扩散系数 \(D\) 并非常数，而是水分浓度 \(C\) 与温度 \(T\) 的非线性函数，这使得模型呈现强非线性特征。在边界条件方面，药材中心满足对称条件（绝热绝质），表面则与烘房环境发生对流换热与对流传质，属于第三类边界条件。
+从物理机理看，中药材内部结构复杂，鉴于题目提供的密度、比热容、导热系数与有效扩散系数均为宏观等效系数，本文采取宏观连续介质假设，将药材划分为微元控制体，建立宏观连续介质模型。同时，针对圆柱形及初始分布均匀的特点，忽略轴向与圆周方向的变化，简化为\textbf{一维径向模型}。基于傅里叶导热定律与有效Fick定律建立控制方程。由于水分扩散系数 \(D\) 是水分浓度 \(C\) 与温度 \(T\) 的非线性函数，模型呈现强非线性特征。边界条件方面，药材中心满足对称条件，表面则发生对流换热与对流传质，属于第三类边界条件。
 
-在模型求解层面，由于该非线性偏微分方程组难以获得解析解，本文采用“显式有限差分法（FDM）”进行数值离散求解。在求解过程中面临两个核心难点：一是附件1提供的烘房环境数据是离散的，且显式差分对边界条件的一阶导数极为敏感，若采用常规线性插值极易引发数值震荡，因此本文引入**PCHIP插值**，以保证插值曲线的一阶导数连续且单调，避免非物理的过冲现象；二是空间离散时需妥善处理圆柱中心的坐标奇点以及表面的通量平衡。为此，本文利用洛必达法则处理中心节点，并基于有限体积法思想，引入界面扩散系数的算术平均，从而保障数值计算的稳定性与物理守恒性。
+在模型求解上，由于难以获得解析解，本文采用\textbf{显式有限差分法（FDM）}进行数值求解。求解主要面临两大难点：一是环境数据离散，且显式差分对边界条件的一阶导数极为敏感，常规线性插值易引发数值震荡，故引入\textbf{PCHIP插值}，保证插值曲线一阶导数连续且单调，避免非物理的过冲现象；二是需妥善处理圆柱中心的坐标奇点及表面通量平衡，为此本文利用洛必达法则处理中心节点，并基于有限体积法思想，保障数值计算的稳定性与物理守恒性。最后，从全局能量守恒与水分质量守恒两个维度对算法进行验证，确保结果可靠并满足精度要求。
 
-最后，为保证计算结果的可靠性，本文在数值求解后，分别从全局能量守恒与水分质量守恒两个维度对算法进行守恒性验证，确保相对误差远小于工程容许阈值，最终输出满足精度要求的温度场与水分场分布结果。
+
+
 
 \subsection{问题二分析}	
-对于问题二，先用问题一的均匀初值和附件1边界计算至绝对时间5500 s，再将该时刻的温度与水分径向剖面作为恒温干燥阶段初值。恒温阶段采用附录3给出的变物性关系，温度方程和水分方程中的系数按上一步状态滞后更新，并用半隐式有限体积格式求解。结果表以5500 s为时间原点，记录其后3 h内每隔1 s的完整场，并提取每隔0.5 h的五个径向位置结果。
+对于问题二，
 
 \subsection{问题三分析}
-对于问题三，沿用问题二的变物性模型，从原始初态 (T=28^\circ\mathrm{C})、(C=2.55) 开始计算，定义每一时刻全域最大含水率。通过寻找该最大值首次降至0.15以下的相邻时间点并线性插值，得到满足所有位置含水率要求的最短全过程干燥时间；同时按每隔6 h输出径向含水率。5500 s 处的数值剖面与问题二的 \texttt{output3.xlsx} 交叉校验。
+对于问题三，
 
 \subsection{问题四分析}
 对于问题四，
@@ -173,10 +162,12 @@
 \(R\)      & 药材半径                               & \(\mathrm{m}\) \\
 \(T_0\)    & 药材初始温度                           & \(^{\circ}\mathrm{C}\) \\
 \(T(r,t)\) & 药材内部温度                           & \(^{\circ}\mathrm{C}\) 或 \(\mathrm{K}\) \\
-\(T_{\text{air}}(t)\) & 烘房温度                     & \(^{\circ}\mathrm{C}\) \\
+\(T_s\)    & 药材表面温度                           & \(^{\circ}\mathrm{C}\) \\
+\(T_\infty(t)\) & 烘房温度                     & \(^{\circ}\mathrm{C}\) \\
 \(C_0\)    & 药材初始水分浓度                       & \(\mathrm{kg/kg}\) \\
 \(C(r,t)\) & 药材水分浓度             & \(\mathrm{kg/kg}\) \\
-\(C_{\text{air}}(t)\) & 烘房空气水分浓度             & \(\mathrm{kg/kg}\) \\
+\(C_s\)    & 药材初始水分浓度                       & \(\mathrm{kg/kg}\) \\
+\(C_\infty(t)\) & 烘房空气水分浓度             & \(\mathrm{kg/kg}\) \\
 \(\rho\)   & 药材密度                               & \(\mathrm{kg/m^3}\) \\
 \(c_p\)    & 药材比热容                             & \(\mathrm{J/(kg\cdot K)}\) \\
 \(k\)      & 药材热传导系数                         & \(\mathrm{W/(m\cdot K)}\) \\
@@ -211,62 +202,13 @@
 孔道网络模型从物料内部孔隙结构出发，将多孔介质离散为节点与孔道网络，通过毛细压力、蒸发冷凝等机制模拟水分迁移。其优点是能反映真实孔隙结构的影响，可解释“湿斑”和“不规则前沿”等现象；但建模复杂、计算量大，三维模拟尚不成熟，难以直接应用于工程尺度预测。
 
 综上，三类方法各有侧重。考虑到题目给出的密度、比热容、导热系数与有效扩散系数均为宏观等效系数，且问题需要获取药材内部温度与水分浓度的时空变化规律及烘干时长，本文选择连续介质假设模型进行模拟。即将药材等效为均匀连续的多孔介质，建立描述其内部水分浓度与温度时空演化的偏微分方程组，结合给定的初始条件与边界条件，使用数值方法求解，最终得到温度和水分浓度分布。
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    scale=0.82, transform shape,          % <-- 整体缩小到 80%
-    node distance=0.8cm and 0.4cm,       % <-- 略微收紧节点间距
-    base/.style = {draw, rounded corners, font=\small, inner sep=6pt},
-    rootnode/.style = {base, fill=blue!10, font=\bfseries, align=center, minimum width=10cm},
-    method1/.style = {base, text width=4.2cm, fill=white},
-    method2/.style = {base, text width=4.2cm, fill=blue!5, draw=blue!80, thick},
-    method3/.style = {base, text width=4.2cm, fill=white},
-    conclusion/.style = {base, fill=green!10, align=left, text width=12cm},
-    arrow/.style = {->, >=Stealth, thick}
-]
-
-    \node[rootnode] (root) {中药材热风干燥数学建模方法选择};
-    
-    \node[method1, below=1.0cm of root, xshift=-5cm] (m1) {
-        \textbf{方法1：干燥动力学模型}\\[0.2cm]
-        \textcolor{green!60!black}{\textbf{优点：}}形式简单、计算快、适合快速预测整体干燥特性及实验数据拟合。\\[0.2cm]
-        \textcolor{red!70!black}{\textbf{缺点：}}依赖经验参数、机理不明、无法获取内部场分布。
-    };
-    
-    \node[method2, below=1.0cm of root] (m2) {
-        \textbf{方法2：连续介质假设模型}\\[0.2cm]
-        \textcolor{green!60!black}{\textbf{优点：}}宏观时空演化、物理意义清晰、计算效率高，最适用于干燥研究。\\[0.2cm]
-        \textcolor{red!70!black}{\textbf{缺点：}}基于连续性假设，对复杂孔隙描述不够精细。
-    };
-    
-    \node[method3, below=1.0cm of root, xshift=5cm] (m3) {
-        \textbf{方法3：孔道网络模型}\\[0.2cm]
-        \textcolor{green!60!black}{\textbf{优点：}}反映真实孔隙、解释“湿斑“和“不规则前沿”等现象，适合微观机理分析。\\[0.2cm]
-        \textcolor{red!70!black}{\textbf{缺点：}}建模复杂、计算量大、三维模拟尚不成熟。
-    };
-
-    \draw[arrow] ([xshift=-1.5cm]root.south) -- (m1.north);
-    \draw[arrow, blue!80, line width=1.5pt] (root.south) -- (m2.north);
-    \draw[arrow] ([xshift=1.5cm]root.south) -- (m3.north);
-
-    \node[conclusion, below=1.0cm of m2, xshift=0cm] (conclusion) {
-        \centering
-        \textbf{本文选择：连续介质假设模型}\\
-        \raggedright
-        \normalfont\small
-        \hspace*{1em}\textbf{选择理由：}\\[0.1cm]
-        \hspace*{2.5em}1. 题目给出的密度、比热容、导热系数与有效扩散系数为宏观等效系数\\
-        \hspace*{2.5em}2. 需要获取温度与水分浓度的时空分布规律及烘干时长；\\
-        \hspace*{2.5em}3. 宏观尺度计算效率高，工程适用性强。
-    };
-
-    \draw[arrow, blue!80, line width=1.5pt] (m2) -- (conclusion);
-
-\end{tikzpicture}
-\caption{三种热风干燥数值模拟方法优劣势对比与选择依据}
-\label{fig:method_selection}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/selection.pdf}
+    \caption{三种热风干燥数值模拟方法优劣势对比与选择依据}
+    \label{fig:placeholder}
 \end{figure}
+
 
 \subsection{模型建立：热质传递控制方程的建立}
 
@@ -362,9 +304,9 @@ T(r,0) = 28^\circ\text{C}, \qquad C(r,0) = 2.55\,\text{kg/kg}, \qquad 0 \le r \l
 
 药材表面含水率与空气水分浓度之间存在差异，水分先从药材内部扩散至表面，再通过气膜传递至空气中。因此，药材表面满足对流传质边界条件
 \begin{equation}
--D \left. \frac{\partial C}{\partial r} \right|_{r=R} = h_m \left[ C(R,t) - C_{\text{air}}(t) \right]
+-D \left. \frac{\partial C}{\partial r} \right|_{r=R} = h_m \left[ C(R,t) - C_\infty(t) \right]
 \end{equation}
-式中，\(h_m\) 为对流传质系数，\(C_{\text{air}}(t)\) 为烘房空气水分浓度，其随时间的变化由附件1给出。
+式中，\(h_m\) 为对流传质系数，\(C_\infty(t)\) 为烘房空气水分浓度，其随时间的变化由附件1给出。
 
 \subsection{模型求解}
 
@@ -376,13 +318,13 @@ T(r,0) = 28^\circ\text{C}, \qquad C(r,0) = 2.55\,\text{kg/kg}, \qquad 0 \le r \l
 
 \subsubsection{边界条件的数据预处理}
 
-在算法的时间推进过程中，表面节点及内部节点的更新均高度依赖于烘房环境的实时边界值 \(T_{\text{air}}(t)\) 和 \(C_{\text{air}}(t)\)。由于仅提供了有限个离散时间点的环境参数数据，必须通过插值获取任意时间步 \(n+1\) 对应的环境值 \(T_{\text{air}}^{n+1}\) 和 \(C_{\text{air}}^{n+1}\)。
+在算法的时间推进过程中，表面节点及内部节点的更新均高度依赖于烘房环境的实时边界值 \(T_\infty(t)\) 和 \(C_\infty(t)\)。由于仅提供了有限个离散时间点的环境参数数据，必须通过插值获取任意时间步 \(n+1\) 对应的环境值 \(T_\infty^{n+1}\) 和 \(C_\infty^{n+1}\)。
 
 由于显式有限差分法对边界条件的一阶导数十分敏感，若采用常规线性插值，其在节点处导数不连续（折点）的非光滑特性极易引起数值震荡，进而导致求解发散。因此，本文选取 PCHIP（分段三次 Hermite 插值多项式）对烘房环境参数进行插值。PCHIP 不仅保证了插值曲线的一阶导数连续，符合物理量平滑变化的规律，同时\textbf{保持数据的单调性，避免非物理的过冲现象}。这使得插值得到的水分浓度不会出现负值，为后续偏微分方程的数值求解提供了平滑且稳定的边界输入，保障了计算收敛性。
 
 \subsubsection{时间推进与节点更新}
 
-在每一个时间步内，获取下一时刻的环境值 \(T_{\text{air}}^{n+1}\) 和 \(C_{\text{air}}^{n+1}\) 后，对空间节点进行分类更新。其中，\(T_{N_r-2}^n\) 与 \(C_{N_r-2}^n\) 表示与表面相邻的内部节点在当前时刻的温度与水分浓度值。
+在每一个时间步内，获取下一时刻的环境值 \(T_\infty^{n+1}\) 和 \(C_\infty^{n+1}\) 后，对空间节点进行分类更新。其中，\(T_{N_r-2}^n\) 与 \(C_{N_r-2}^n\) 表示与表面相邻的内部节点在当前时刻的温度与水分浓度值。
 
 \textbf{1. 内部节点更新（\(i = 1,2,\dots,N_r-2\)）}
 
@@ -391,13 +333,11 @@ T(r,0) = 28^\circ\text{C}, \qquad C(r,0) = 2.55\,\text{kg/kg}, \qquad 0 \le r \l
 T_i^{n+1} = T_i^n + \alpha \frac{\Delta t}{\Delta r^2} \left[ \left(1 + \frac{\Delta r}{2r_i}\right) T_{i+1}^n - 2T_i^n + \left(1 - \frac{\Delta r}{2r_i}\right) T_{i-1}^n \right]
 \end{equation}
 其中，热扩散系数 \(\alpha = k/(\rho c_p)\)，\(k\) 为药材热传导系数，\(\rho\) 为药材密度，\(c_p\) 为药材比热容。
-水分浓度采用界面通量形式更新。令
-\(D_{i-1/2}^n=D((C_{i-1}^n+C_i^n)/2)\)、
-\(D_{i+1/2}^n=D((C_i^n+C_{i+1}^n)/2)\)，则
+同理，水分浓度更新公式为：
 \begin{equation}
-C_i^{n+1}=C_i^n+\frac{\Delta t}{\Delta r^2}\left[\left(1+\frac{\Delta r}{2r_i}\right)D_{i+1/2}^n(C_{i+1}^n-C_i^n)+\left(1-\frac{\Delta r}{2r_i}\right)D_{i-1/2}^n(C_{i-1}^n-C_i^n)\right]
+C_i^{n+1} = C_i^n + D_i^n \frac{\Delta t}{\Delta r^2} \left[ \left(1 + \frac{\Delta r}{2r_i}\right) C_{i+1}^n - 2C_i^n + \left(1 - \frac{\Delta r}{2r_i}\right) C_{i-1}^n \right]
 \end{equation}
-这种写法使相邻控制体共用同一界面通量，保持水分守恒。
+其中，\(D_i^n = D(C_i^n, T_i^n)\) 为当前时刻第 \(i\) 个节点的水分扩散系数，由题目附录中的经验公式计算得到。
 
 \textbf{2. 中心节点更新（\(i = 0\)）}
 
@@ -412,82 +352,32 @@ C_0^{n+1} = C_0^n + 4D_0^n \frac{\Delta t}{\Delta r^2} (C_1^n - C_0^n)
 
 \textbf{3. 表面节点更新（\(i = N_r-1\)）}
 
-药材表面受到对流换热与对流传质的作用。记 \(i_s=N_r-1\)，表面控制体体积因子为 \(V_s=i_s-0.25\)。将表面控制体内导热和对流换热统一离散，表面温度更新公式为：
+药材表面受到对流换热与对流传质的作用。记表面位置 \(r_{\text{surf}} = (N_r-1)\Delta r\)，引入曲率修正系数 \(A = 1 + \frac{\Delta r}{2r_{\text{surf}}}\)。结合第三类边界条件，表面温度更新公式为：
 \begin{equation}
-T_{i_s}^{n+1}=T_{i_s}^n+\Delta t\left[\frac{2(i_s-0.5)k}{\rho c_p V_s\Delta r^2}(T_{i_s-1}^n-T_{i_s}^n)+\frac{2i_s h}{\rho c_p V_s\Delta r}(T_{\text{air}}^{n+1}-T_{i_s}^n)\right]
+T_{N_r-1}^{n+1} = T_{N_r-1}^n + \frac{2\alpha\Delta t}{\Delta r^2}(T_{N_r-2}^n - T_{N_r-1}^n) - \frac{2\Delta t h}{\rho c_p \Delta r} A (T_{N_r-1}^n - T_\infty^{n+1})
 \end{equation}
-表面水分浓度采用表面控制体更新。令 \(i_s=N_r-1\)、\(V_s=i_s-0.25\)，则
+表面水分浓度更新公式为：
 \begin{equation}
-C_{i_s}^{n+1}=C_{i_s}^n+\Delta t\left[\frac{2(i_s-0.5)D_{i_s-1/2}^n}{V_s\Delta r^2}(C_{i_s-1}^n-C_{i_s}^n)+\frac{2i_s h_m}{V_s\Delta r}(C_{\text{air}}^{n+1}-C_{i_s}^n)\right]
+C_{N_r-1}^{n+1} = C_{N_r-1}^n + \frac{2D_{\text{surf}}^n \Delta t}{\Delta r^2}(C_{N_r-2}^n - C_{N_r-1}^n) - \frac{2\Delta t h_m}{\Delta r} A (C_{N_r-1}^n - C_\infty^{n+1})
 \end{equation}
-式中，\(D_{i_s-1/2}^n\) 为表面内侧界面扩散系数；\(T_{\text{air}}^{n+1}\) 和 \(C_{\text{air}}^{n+1}\) 为边界数据插值得到的环境值。
+式中，\(h\) 和 \(h_m\) 分别为对流换热系数和对流传质系数；\(D_{\text{surf}}^n = D(C_{N_r-1}^n, T_{N_r-1}^n)\) 为表面节点处的水分扩散系数。此处，\(T_\infty^{n+1}\) 和 \(C_\infty^{n+1}\) 即为前文通过 PCHIP 插值获得的环境边界值。
 
 \subsubsection{求解流程与结果输出}
 
-上述显式差分的求解流程如图\ref{fig:algorithm_flowchart}所示。算法首先初始化温度与水分浓度矩阵，并计算热扩散系数；随后进入时间推进循环（\(n = 0\) 到 \(N_t-2\)），在每一时间步内，先利用 PCHIP 插值获取下一时刻的环境值 \(T_{\text{air}}^{n+1}\) 和 \(C_{\text{air}}^{n+1}\)，接着计算当前时刻各节点的水分扩散系数 \(D_i^n\)，并依次更新内部节点、中心节点及表面节点的温度与水分浓度；循环结束后，输出完整的温度矩阵 \(T_i^n\) 和水分矩阵 \(C_i^n\)，并按要求提取特定时刻与径向位置的切片数据。
+上述显式差分的求解流程如图\ref{fig:algorithm_flowchart}所示。算法首先初始化温度与水分浓度矩阵，并计算热扩散系数；随后进入时间推进循环（\(n = 0\) 到 \(N_t-2\)），在每一时间步内，先利用 PCHIP 插值获取下一时刻的环境值 \(T_\infty^{n+1}\) 和 \(C_\infty^{n+1}\)，接着计算当前时刻各节点的水分扩散系数 \(D_i^n\)，并依次更新内部节点、中心节点及表面节点的温度与水分浓度；循环结束后，输出完整的温度矩阵 \(T_i^n\) 和水分矩阵 \(C_i^n\)，并按要求提取特定时刻与径向位置的切片数据。
 
 值得注意的是，显式差分格式需满足 CFL 稳定性条件，即时间步长 \(\Delta t\) 必须足够小（一般要求 \(\alpha \frac{\Delta t}{\Delta r^2} \le \frac{1}{4}\)），以保证数值求解的收敛性。本文在后续计算中将严格选取满足该条件的时空步长。
 
 
-
-
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    scale=0.85, transform shape, % <--- 这里加入缩放参数，改成 0.8 就会更小
-    node distance = 0.6cm and 1cm,
-    startstop/.style = {rectangle, rounded corners, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=red!15},
-    process/.style = {rectangle, minimum width=4.5cm, minimum height=0.8cm, text centered, draw=black, fill=blue!8},
-    decision/.style = {diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!10, aspect=2},
-    arrow/.style = {thick,->,>=Stealth}
-]
-
-    \node (start) [startstop] {开始};
-    \node (input) [process, below=of start] {输入初始条件、物性参数、网格参数};
-    \node (init) [process, below=of input] {初始化温度场 \(T_i^0\) 与水分场 \(C_i^0\)};
-    \node (loop) [process, below=of init] {时间循环 \(n = 0\) 到 \(N_t - 2\)};
-    \node (pchip) [process, below=of loop] {PCHIP 插值获取环境值 \(T_{\text{air}}^{n+1}, C_{\text{air}}^{n+1}\)};
-    \node (diff) [process, below=of pchip] {计算当前时刻水分扩散系数 \(D_i^n\)};
-    \node (update) [process, below=of diff] {依次更新中心、内部及表面节点};
-    \node (dec) [decision, below=of update, yshift=-0.2cm] {\(n < N_t - 1\) ?};
-    \node (output) [process, below=of dec, yshift=-0.3cm] {输出完整矩阵 \(T, C\) 并提取切片数据};
-    \node (end) [startstop, below=of output] {结束};
-
-    \draw [arrow] (start) -- (input);
-    \draw [arrow] (input) -- (init);
-    \draw [arrow] (init) -- (loop);
-    \draw [arrow] (loop) -- (pchip);
-    \draw [arrow] (pchip) -- (diff);
-    \draw [arrow] (diff) -- (update);
-    \draw [arrow] (update) -- (dec);
-    
-    \draw [arrow] (dec.east) -- ++(2.4,0) node[midway, above] {是} |- (pchip.east);
-    
-    \draw [arrow] (dec) -- node[anchor=east, xshift=-0.1cm] {否} (output);
-    \draw [arrow] (output) -- (end);
-
-\end{tikzpicture}
-\caption{一维非稳态热质耦合传热传质求解算法流程图}
-\label{fig:algorithm_flowchart}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/algorithm_flow.pdf}
+    \caption{一维非稳态热质耦合传热传质求解算法流程图}
+    \label{fig:placeholder}
 \end{figure}
-
 
 \subsubsection{求解结果}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{pic/3_温度和水分热力图.png}
-    \caption{问题一温度场与水分浓度场热力图}
-    \label{fig:q1_heatmap}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{pic/2_温度时间演化图.png}
-    \caption{问题一温度随时间的径向演化}
-    \label{fig:q1_temperature}
-\end{figure}
 
 
 
@@ -505,11 +395,11 @@ C_{i_s}^{n+1}=C_{i_s}^n+\Delta t\left[\frac{2(i_s-0.5)D_{i_s-1/2}^n}{V_s\Delta r
 \end{equation}
 表面 \(r=R\) 处为第三类对流换热边界：
 \begin{equation}
--k \left. \frac{\partial T}{\partial r} \right|_{r=R} = h \left( T(R,t) - T_{\text{air}}(t) \right)
+-k \left. \frac{\partial T}{\partial r} \right|_{r=R} = h \left( T_\infty(t) - T(R,t) \right)
 \end{equation}
 将控制方程在 \([0,R]\) 上积分并代入边界条件，可得全局能量平衡方程。在 \([0,t]\) 上进一步积分，可推导得总能量变化等于边界热流累积：
 \begin{equation}
-\underbrace{Q(t) - Q(0)}_{\text{总能量变化}} = \underbrace{\int_0^t 2\pi R h \left( T_{\text{air}}(\tau) - T(R,\tau) \right) d\tau}_{\text{边界热流累积}}
+\underbrace{Q(t) - Q(0)}_{\text{总能量变化}} = \underbrace{\int_0^t 2\pi R h \left( T_\infty(\tau) - T(R,\tau) \right) d\tau}_{\text{边界热流累积}}
 \end{equation}
 其中，总能量定义为 \(Q(t) = \int_0^R \rho c_p T(r,t) \cdot 2\pi r \, dr\)。
 
@@ -520,11 +410,8 @@ Q^n = \sum_{i=0}^{N_r-1} \rho c_p T_i^n V_i
 \end{equation}
 边界热流累积为：
 \begin{equation}
-Q_{\text{flux}}^n = \sum_{m=0}^{n-1} h \cdot 2\pi R
-\left( T_{\text{air}}^{m+1} - T_{N_r-1}^{m} \right) \Delta t
+Q_{\text{flux}}^n = \sum_{m=0}^{n-1} h \cdot 2\pi R \left( T_\infty^m - T_{N_r-1}^m \right) \Delta t
 \end{equation}
-问题一的显式表面控制体在第 (m) 步使用当前表面温度和下一时刻环境温度，
-因此上式与程序的时间层一致；问题二、三的半隐式表面方程使用下一时刻表面温度。
 定义能量守恒相对误差为：
 \begin{equation}
 \varepsilon_Q^n = \frac{\left| (Q^n - Q^0) - Q_{\text{flux}}^n \right|}{\max \left( |Q^n - Q^0|, \epsilon \right)}
@@ -539,20 +426,15 @@ Q_{\text{flux}}^n = \sum_{m=0}^{n-1} h \cdot 2\pi R
 \end{equation}
 其中 \(D(C) = 7 \times 10^{-9} \exp\left(-\frac{0.89}{C}\right)\) 为随浓度变化的扩散系数。表面 \(r=R\) 处为第三类对流传质边界：
 \begin{equation}
--D(C) \left. \frac{\partial C}{\partial r} \right|_{r=R} = h_m \left( C(R,t) - C_{\text{air}}(t) \right)
+-D(C) \left. \frac{\partial C}{\partial r} \right|_{r=R} = h_m \left( C_\infty(t) - C(R,t) \right)
 \end{equation}
 同理，将控制方程积分并代入边界条件，可得总水分变化等于边界质流累积：
 \begin{equation}
-\underbrace{M(t) - M(0)}_{\text{总水分变化}} = \underbrace{\int_0^t 2\pi R h_m \left( C_{\text{air}}(\tau) - C(R,\tau) \right) d\tau}_{\text{边界质流累积}}
+\underbrace{M(t) - M(0)}_{\text{总水分变化}} = \underbrace{\int_0^t 2\pi R h_m \left( C_\infty(\tau) - C(R,\tau) \right) d\tau}_{\text{边界质流累积}}
 \end{equation}
 其中，总水分定义为 \(M(t) = \int_0^R C(r,t) \cdot 2\pi r \, dr\)。
 
-在离散域中，离散总水分计算式为 \(M^n = \sum_{i=0}^{N_r-1} C_i^n V_i\)。
-问题一的边界质流累积为
-\(M_{\text{flux}}^n = \sum_{m=0}^{n-1} h_m 2\pi R
-\left(C_{\text{air}}^{m+1}-C_{N_r-1}^{m}\right)\Delta t\)，
-问题二、三将表面项改为 (C_{N_r-1}^{m+1})。同理可定义水分守恒相对误差
-\(\varepsilon_M^n\)。
+在离散域中，离散总水分计算式为 \(M^n = \sum_{i=0}^{N_r-1} C_i^n V_i\)，边界质流累积为 \(M_{\text{flux}}^n = \sum_{m=0}^{n-1} m^m \Delta t\)，其中表面质流 \(m^n = h_m \cdot 2\pi R \left( C_\infty^n - C_{N_r-1}^n \right)\)。同理可定义水分守恒相对误差 \(\varepsilon_M^n\)。
 
 \subsubsection{变系数扩散的守恒性说明}
 
@@ -570,13 +452,6 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 \subsubsection{守恒性检验结果}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{pic/验证_守恒检查.png}
-    \caption{问题一能量与水分守恒检验}
-    \label{fig:q1_conservation}
-\end{figure}
-
 
 
 采用时间步长 \(\Delta t = 1\,\text{s}\)，空间步长 \(\Delta r = 1\,\text{mm}\)，模拟总时长 \(t = 1800\,\text{s}\)。两项守恒检查结果如表 \ref{tab:conservation_check} 所示。
@@ -589,26 +464,13 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 \toprule
 守恒量 & 最终相对误差 & 判断标准 & 结论 \\
 \midrule
-能量 & \(0.0000\%\) & \(< 1\% \sim 5\%\) & 优秀 \\
-水分 & \(0.0000\%\) & \(< 1\% \sim 5\%\) & 优秀 \\
+能量 & \(0.2349\%\) & \(< 1\% \sim 5\%\) & 优秀 \\
+水分 & \(0.0004\%\) & \(< 1\% \sim 5\%\) & 优秀 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 结果表明，总能量变化曲线与边界热流累积曲线在整个模拟时段内几乎完全重合；总水分变化曲线与边界质流累积曲线同样几乎完全重合。两项守恒误差均远小于 5\% 的工程容许阈值，充分证明了本文所建立的显式有限差分算法具有良好的守恒性与数值稳定性，能够为后续中药材烘干过程的温度场与水分场求解提供可靠的数值保障。
-
-\subsubsection{检验结果}
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{pic/验证_守恒对照_三问.png}
-    \caption{三问守恒对照结果}
-    \label{fig:all_conservation}
-\end{figure}
-
-
-
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -623,8 +485,8 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 整个烘干过程可分为预热平衡与恒温干燥两个阶段，其环境特征分别为：
 \begin{itemize}
-    \item \textbf{预热平衡阶段}：烘房温度 \(T_{\text{air}}(t)\) 与水分浓度 \(C_{\text{air}}(t)\) 随时间明显变化；
-    \item \textbf{恒温干燥阶段}：烘房温度 \(T_{\text{air}}(t)\) 接近恒定，水分浓度 \(C_{\text{air}}(t)\) 也进入平台。
+    \item \textbf{预热平衡阶段}：烘房温度 \(T_\infty(t)\) 与水分浓度 \(C_\infty(t)\) 随时间明显变化；
+    \item \textbf{恒温干燥阶段}：烘房温度 \(T_\infty(t)\) 接近恒定，水分浓度 \(C_\infty(t)\) 也进入平台。
 \end{itemize}
 
 \subsubsection{双向耦合关系}
@@ -666,13 +528,13 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
     \frac{1}{r}\frac{\partial}{\partial r}\left(r k \frac{\partial T}{\partial r}\right) = k\left(\frac{\partial^2 T}{\partial r^2} + \frac{1}{r}\frac{\partial T}{\partial r}\right) + k_c \frac{\partial C}{\partial r} \frac{\partial T}{\partial r}
     \label{eq:temp_expand}
 \end{equation}
-其中，\(k_c=\mathrm{d}k/\mathrm{d}C\)。程序实际直接离散守恒形式，而不单独离散展开后的导数项。
+其中，\(k_c \frac{\partial C}{\partial r} \frac{\partial T}{\partial r}\) 表示水分分布对热传导的影响。
 
 \subsubsection{水分方程}
 
 等效水分通量为：
 \begin{equation}
-    qc = -D(C, T)\frac{\partial C}{\partial r}
+    qc = -D(C, T_k)\frac{\partial C}{\partial r}
     \label{eq:qc}
 \end{equation}
 
@@ -693,7 +555,6 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
     \frac{\partial C}{\partial t} = D\left(\frac{\partial^2 C}{\partial r^2} + \frac{1}{r} \frac{\partial C}{\partial r}\right) + D_c \left(\frac{\partial C}{\partial r}\right)^2 + D_T \frac{\partial T}{\partial r} \frac{\partial C}{\partial r}
     \label{eq:moisture_expand}
 \end{equation}
-其中，\(D_c=\partial D/\partial C\)、\(D_T=\partial D/\partial T\)。程序直接离散上式对应的守恒通量形式，并在相邻节点界面取平均物性。
 
 综上，问题二存在双向耦合：
 \begin{align*}
@@ -705,14 +566,10 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 \subsubsection{初始状态}
 
-问题二分两段计算。首先以题目给出的均匀状态
-\(T(r,0)=28^\circ\text{C}\)、\(C(r,0)=2.55\,\text{kg/kg}\)
-计算至绝对时间 5500 s。随后将该时刻的径向剖面作为恒温干燥阶段的初值，令
-\(\tau=t-5500\) 表示经过时间，则
+烘干开始时，药材内部温度和水分浓度分布均匀，由题意可得
 \begin{equation}
-    T(r,0)=T_{5500}(r), \qquad C(r,0)=C_{5500}(r), \qquad 0\le r\le R .
+    T(r,0) = 28^\circ\text{C}, \qquad C(r,0) = 2.55 \, \text{kg/kg}, \qquad 0 \le r \le R
 \end{equation}
-恒温干燥阶段的结果表以 \(\tau=0\) 为时间起点，记录 0--10800 s。
 
 \subsubsection{中心对称条件}
 
@@ -725,8 +582,8 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 药材表面 \(r=R\) 处同时受到对流换热与对流传质作用，满足 Robin 边界条件：
 \begin{align}
-    -k(C_s) \frac{\partial T}{\partial r}(R,t) &= h \left[ T(R,t) - T_{\text{air}}(t) \right] \label{eq:bc_temp} \\
-    -D(C(R,t), T_{R,s}) \frac{\partial C}{\partial r}(R,t) &= h_m \left[ C(R,t) - C_{\text{air}}(t) \right] \label{eq:bc_moisture}
+    -k(C_s) \frac{\partial T}{\partial r}(R,t) &= h \left[ T(R,t) - T_\infty(t) \right] \label{eq:bc_temp} \\
+    -D(C(R,t), T_{R,s}) \frac{\partial C}{\partial r}(R,t) &= h_m \left[ C(R,t) - C_\infty(t) \right] \label{eq:bc_moisture}
 \end{align}
 
 其中，对流换热系数与对流传质系数分别为
@@ -738,51 +595,11 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 
 
-\subsection{数值实现}
-
-每个时间步先用上一时刻的 \(T^n,C^n\) 计算节点和界面的
-\(\rho,c_p,k,D\)，再将扩散通量和表面对流项组装为三对角线性方程组：
-\begin{equation}
- A_T^n T^{n+1}=T^n+b_T^{n+1},
- \qquad
- A_C^n C^{n+1}=C^n+b_C^{n+1} .
-\end{equation}
-内部界面物性取相邻节点平均值，中心节点采用轴对称极限，表面控制体同时包含内部扩散通量和 Robin 对流通量。
-温度和水分方程分别用追赶法求解；新时刻仅作物理范围截断
-\(T\in[-50,250]\ ^\circ\mathrm{C}\)、\(C\in[0,10]\)，并在验证脚本中检查截断未被实际触及。
-这种“系数滞后、状态隐式”的半隐式格式保留了有限体积通量守恒。
-结果文件时间列采用经过时间 \(\tau=0,1,\ldots,10800\,\mathrm{s}\)，
-边界函数仍按绝对时间 \(5500+\tau\) 查询。
-
-\subsection{求解结果}
-
-恒温阶段以 5500 s 剖面为 \(\tau=0\)，计算至 \(\tau=10800\,\mathrm{s}\)。
-温度由约 \(46.05^\circ\mathrm{C}\) 逐渐接近 \(50^\circ\mathrm{C}\)，水分浓度由
-约 2.37 降至 0.73，中心位置的变化滞后于表面，符合径向扩散的物理规律。
-完整温度、水分矩阵分别保存在 \texttt{result2.xlsx} 的两个工作表中，
-五个径向位置在 0.5--3.0 h 的摘要保存在 \texttt{q2\_3.xlsx} 和
-\texttt{q2\_4.xlsx}。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/q2_温度时间演化图.png}
-    \caption{问题二恒温阶段温度径向演化}
-    \label{fig:q2_temperature}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/q2_水分时间演化图.png}
-    \caption{问题二恒温阶段水分浓度径向演化}
-    \label{fig:q2_moisture}
-\end{figure}
-
-\iffalse
 \subsection{待删}
 \textcolor{red}{\textbf{两阶段：}}
 \begin{itemize}
-    \item \textbf{预热平衡}：\(T_{\text{air}}(t), C_{\text{air}}(t)\) 明显随时间变化
-    \item \textbf{恒温干燥}：\(T_{\text{air}}(t)\) 接近恒定，\(C_{\text{air}}(t)\) 也进入平台
+    \item \textbf{预热平衡}：\(T_\infty(t), C_\infty(t)\) 明显随时间变化
+    \item \textbf{恒温干燥}：\(T_\infty(t)\) 接近恒定，\(C_\infty(t)\) 也进入平台
 \end{itemize}
 
 \textbf{耦合关系：}
@@ -825,7 +642,7 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 等效水分通量：
 \begin{equation}
-    qc = -D(C, T)\frac{\partial C}{\partial r}
+    qc = -D(C, T_k)\frac{\partial C}{\partial r}
 \end{equation}
 
 对环形控制体进行水分守恒：
@@ -874,53 +691,120 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 \subsection{求解结果}
 
-\fi
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 \section{问题三的模型的建立和求解}
 \subsection{模型建立}
 
-问题三要求药材内部所有位置满足 \(C\le 0.15\)。定义全域最大含水率
-\begin{equation}
-    C_{\max}(t)=\max_{0\le r\le R} C(r,t),
-\end{equation}
-则干燥结束时间取为
-\begin{equation}
-    t_d=\inf\{t:C_{\max}(t)\le 0.15\}.
-\end{equation}
-计算沿用问题二的变物性模型和边界条件，从原始初态开始计时，时间步长取 60 s，空间步长取 0.001 m；5500 s 的剖面用于和问题二初始文件核对。
-
 \subsection{模型求解}
 
-逐时刻计算全域最大含水率并寻找首次跨越阈值的相邻时间点，再在线性插值获得 \(t_d\)。同时输出从 0 s 开始每 60 s 的完整径向结果和每 6 h 的摘要结果。
+\textbf{Step1：} 
+
+\textbf{Step2：} 
+
+\textbf{Step3：} 
 
 \subsection{求解结果}
-
-计算得到全过程烘干时间 \(t_d=210634.74\,\text{s}=58.5096\,\text{h}\)。阈值前后相邻网格点的全域最大含水率分别为 0.150010 和 0.149993，满足阈值跨越判定。
-
-在全过程输出中，水分浓度随时间整体下降，且表面浓度始终低于中心浓度，
-说明水分由内部向外扩散。每 6 h 的径向摘要以及 60 s 完整矩阵分别保存在
-\texttt{result3\_summary.xlsx} 和 \texttt{result3.xlsx}。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/q3_水分时间演化图.png}
-    \caption{问题三水分浓度的时间演化}
-    \label{fig:q3_moisture_time}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/q3_水分热力图.png}
-    \caption{问题三水分浓度时空分布}
-    \label{fig:q3_moisture_heatmap}
-\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 \section{问题四的模型的建立和求解}
-\subsection{模型建立}
+
+\subsection{模型建立：移动边界湿热耦合模型}
+
+问题一至问题三均假设药材半径 \(R\) 为常数。然而，在实际烘干过程中，药材内部水分不断流失，会引起明显的体积收缩。此时，药材的计算区域不再是固定的 \(0 \le r \le R\)，而是随时间变化的移动边界区域 \(0 \le r \le R(t)\)。相应地，药材内部的材料点也会随着骨架发生径向位移。因此，问题四需在问题二变物性湿热耦合模型的基础上，进一步引入移动边界处理。
+
+\subsubsection{收缩速度}
+
+设药材半径 \(R(t)\) 随时间变化。假设药材沿径向均匀收缩，则位于半径 \(r\) 处的材料点收缩速度为：
+\begin{equation}
+v_r(r,t) = \frac{R'(t)}{R(t)} \cdot r
+\end{equation}
+式中，\(R'(t)\) 为半径随时间的变化率。该式表明，材料点的收缩速度与到中心的距离 \(r\) 成正比，越靠近表面的材料点移动越快，符合均匀径向收缩的物理图像。
+
+\subsubsection{收缩材料中的守恒方程}
+
+在发生收缩的材料中，物理量随某一固定材料点的变化率不能直接用空间偏导数描述，需引入随体导数（材料导数）：
+\begin{equation}
+\frac{D_m T}{Dt} = \frac{\partial T}{\partial t} + v_r \frac{\partial T}{\partial r}
+\end{equation}
+式中，\(\frac{\partial T}{\partial t}\) 为固定空间位置处的温度变化率；\(v_r \frac{\partial T}{\partial r}\) 为材料点移动引起的对流项。由能量与质量守恒定律，可得移动边界下的控制方程组：
+\begin{equation}
+\rho(C) c_p(C) \frac{D_m T}{Dt} = \frac{1}{r} \frac{\partial}{\partial r} \left[ r k(C) \frac{\partial T}{\partial r} \right]
+\end{equation}
+\begin{equation}
+\frac{D_m C}{Dt} = \frac{1}{r} \frac{\partial}{\partial r} \left[ r D(C, T_k) \frac{\partial C}{\partial r} \right]
+\end{equation}
+方程组右端分别为径向导热项和径向扩散项。
+
+\subsection{移动边界与无量纲坐标变换}
+
+直接求解移动区域 \(0 \le r \le R(t)\) 上的偏微分方程，会导致空间网格随时间不断变化，计算复杂。为将移动边界问题转化为固定区域上的问题，本文引入无量纲坐标：
+\begin{equation}
+\xi = \frac{r}{R(t)}
+\end{equation}
+由此，物理域映射为固定计算域 \(0 \le \xi \le 1\)。其中，\(\xi=0\) 对应药材中心，\(\xi=1\) 对应药材当前表面。
+
+令无量纲坐标下的温度与水分浓度分别为 \(\tilde{T}(\xi,t)\) 和 \(\tilde{C}(\xi,t)\)。由于 \(\xi\) 固定时表示同一材料点位置，因此沿材料点观察到的变化率等价于无量纲坐标下的时间偏导数：
+\begin{equation}
+\frac{D_m T}{Dt} = \frac{\partial \tilde{T}}{\partial t}, \qquad \frac{D_m C}{Dt} = \frac{\partial \tilde{C}}{\partial t}
+\end{equation}
+
+进一步，由链式法则推导空间偏导数的变换关系。由于空间求导时时间 \(t\) 固定，\(R(t)\) 对 \(r\) 而言为常数，故有：
+\begin{equation}
+\frac{\partial \xi}{\partial r} = \frac{1}{R(t)}
+\end{equation}
+若以温度为例，\(T(r,t) = \tilde{T}(\xi,t)\)，则：
+\begin{equation}
+\frac{\partial T}{\partial r} = \frac{\partial \tilde{T}}{\partial \xi} \frac{\partial \xi}{\partial r} = \frac{1}{R(t)} \frac{\partial \tilde{T}}{\partial \xi}
+\end{equation}
+因此，算子变换关系为：
+\begin{equation}
+\frac{\partial}{\partial r} = \frac{1}{R(t)} \frac{\partial}{\partial \xi}
+\end{equation}
+该变换表明，在同一时刻，关于实际距离 \(r\) 的变化率可通过关于归一化距离 \(\xi\) 的变化率表示。
+
+\subsection{固定域上的控制方程}
+
+将上述算子变换与随体导数关系代入移动边界下的守恒方程，可得固定域 \(0 \le \xi \le 1\) 上的控制方程组：
+\begin{equation}
+\rho(\tilde{C}) c_p(\tilde{C}) \frac{\partial \tilde{T}}{\partial t} = \frac{1}{R(t)^2 \xi} \frac{\partial}{\partial \xi} \left[ \xi k(\tilde{C}) \frac{\partial \tilde{T}}{\partial \xi} \right]
+\end{equation}
+\begin{equation}
+\frac{\partial \tilde{C}}{\partial t} = \frac{1}{R(t)^2 \xi} \frac{\partial}{\partial \xi} \left[ \xi D(\tilde{C}, \tilde{T}_k) \frac{\partial \tilde{C}}{\partial \xi} \right]
+\end{equation}
+上述方程在形式上与固定半径情形一致，但引入了 \(1/R(t)^2\) 的尺度因子，体现了收缩对传热传质速度的影响。
+
+\subsection{初始条件与边界条件}
+
+\subsubsection{初始条件}
+烘干开始时，药材内部温度和水分浓度分布均匀，由题意可得：
+\begin{equation}
+\tilde{T}(\xi,0) = 28^\circ\text{C}, \qquad \tilde{C}(\xi,0) = 2.55 \, \text{kg/kg}, \qquad 0 \le \xi \le 1
+\end{equation}
+
+\subsubsection{中心对称条件}
+在药材中心 \(\xi=0\) 处，由轴对称性可知梯度为零：
+\begin{equation}
+\frac{\partial \tilde{T}}{\partial \xi}(0,t) = 0, \qquad \frac{\partial \tilde{C}}{\partial \xi}(0,t) = 0
+\end{equation}
+
+\subsubsection{表面热边界}
+在当前表面 \(\xi=1\) 处，药材表面与烘房热风发生对流换热，满足 Robin 边界条件：
+\begin{equation}
+-\frac{k(\tilde{C}_s)}{R(t)} \frac{\partial \tilde{T}}{\partial \xi}(1,t) = h \left[ \tilde{T}_s - T_\infty(t) \right]
+\end{equation}
+其中，\(\tilde{T}_s = \tilde{T}(1,t)\) 表示药材表面温度，\(T_\infty(t)\) 为烘房空气温度。
+
+\subsubsection{表面水分边界}
+同理，在当前表面 \(\xi=1\) 处，药材表面与空气之间发生对流传质：
+\begin{equation}
+-\frac{D(\tilde{C}_s, \tilde{T}_{k,s})}{R(t)} \frac{\partial \tilde{C}}{\partial \xi}(1,t) = h_m \left[ \tilde{C}_s - C_\infty(t) \right]
+\end{equation}
+其中，\(\tilde{C}_s = \tilde{C}(1,t)\) 表示药材表面含水率，\(C_\infty(t)\) 为烘房空气水分浓度。
+
+综上，问题四的模型在问题二的基础上，通过引入移动边界 \(R(t)\) 与无量纲坐标变换 \(\xi = r/R(t)\)，将原移动区域问题转化为固定域上的变系数偏微分方程组，从而可采用与问题二相同的显式有限差分法进行数值求解。求解时，\(R(t)\) 的取值由附件2中的药材半径随时间变化数据经插值给出。
+
 
 \subsection{模型求解}
 
@@ -938,169 +822,7 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 \subsection{结果检验}
 
-为避免只凭单条曲线判断结果，本文从文件结构、独立重算、网格收敛、守恒关系和物理约束五个方面进行交叉验证。所有验证均由 
-\texttt{validate\_all.py} 自动执行，并将检查结果写入 
-\texttt{output\_excel/validation\_report.json}。报告中的 
-\texttt{all\_passed=true} 表示全部判据同时满足。
-
-\subsubsection{结果文件与独立重算}
-
-首先检查输出文件是否符合题目要求。\texttt{result1.xlsx} 和
-\texttt{result2.xlsx} 均含“温度”和“水分浓度”两个工作表，分别具有
-1801 行和 10801 行数据，时间从 0 s 连续递增至 1800 s 和 10800 s；
-半径列为 0.0--2.0 cm、间隔 0.1 cm。\texttt{result3.xlsx} 从 0 s 开始以
-60 s 记录，并在最后追加线性插值得到的结束时刻。所有数值均为有限值，且输出保留四位小数。
-
-随后不读取结果表中的中间量，而是重新调用三套求解器计算温度矩阵和水分矩阵，
-并逐元素比较重算值的四位小数与 Excel 文件。定义文件误差为
-\begin{equation}
- E_{\rm file}=\max_{n,i}\left|\operatorname{round}(u_{n,i}^{\rm re},4)-u_{n,i}^{\rm file}\right| .
-\end{equation}
-问题一、问题二和问题三的温度（或水分）文件误差均为 0，说明写表、时间索引和径向索引均未发生错位。
-
-问题二的时间原点是 5500 s 断点。将问题二的变物性全过程模型从原始初态独立推进到 5500 s，
-再与 \texttt{output3.xlsx} 的剖面比较，温度和水分的最大绝对误差分别为
-\(4.4195\times10^{-5}\) 和 \(4.8757\times10^{-5}\)，均小于设定的
-\(10^{-4}\) 阈值。因此，问题二的初值确实来自 5500 s，而不是重新使用均匀初值。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/验证_独立重算交叉校验.png}
-    \caption{Excel 结果与独立重算结果的最大绝对误差}
-    \label{fig:validation_independent}
-\end{figure}
-
-\subsubsection{时间步与空间步收敛}
-
-将时间步长依次取为 \(\Delta t,\Delta t/2,\Delta t/4\)，在相同物理时刻比较两组数值解，
-定义
-\begin{equation}
- E_{\Delta t}=\max_{n,i}\left|u_{\Delta t}(t_n,r_i)-u_{\Delta t/2}(t_n,r_i)\right|,
- \qquad R_t=\frac{E_{\Delta t/2}}{E_{\Delta t}} .
-\end{equation}
-显式时间离散的理论阶数为一阶，故应有 \(R_t\approx 0.5\)。空间网格采用
-\(\Delta r,\Delta r/2,\Delta r/4\)，定义
-\begin{equation}
- E_{\Delta r}=\max_i\left|u_{\Delta r}(r_i)-u_{\Delta r/2}(r_i)\right|,
- \qquad R_r=\frac{E_{\Delta r/2}}{E_{\Delta r}} .
-\end{equation}
-中心差分与控制体通量离散的理论空间阶数为二阶，故应有 \(R_r\approx0.25\)。
-
-\begin{table}[H]
-\centering
-\caption{三问网格收敛比}
-\label{tab:convergence_ratio}
-\begin{tabular}{lcccc}
-\toprule
-问题 & 温度时间比 & 水分时间比 & 温度空间比 & 水分空间比 \\
-\midrule
-问题一 & 0.4997 & 0.4987 & 0.2524 & 0.2467 \\
-问题二 & 0.5011 & 0.5001 & 0.2508 & 0.2499 \\
-问题三 & -- & 0.5008 & -- & 0.2488 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-表 \ref{tab:convergence_ratio} 中的误差均随步长减小而下降，时间收敛比落在
-0.5 附近，空间收敛比落在 0.25 附近，与理论阶数一致。收敛曲线见图
-\ref{fig:validation_time} 和图 \ref{fig:validation_space}。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/验证_时间步收敛_三问.png}
-    \caption{三问时间步收敛检验}
-    \label{fig:validation_time}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/验证_空间步收敛_三问.png}
-    \caption{三问空间步收敛检验}
-    \label{fig:validation_space}
-\end{figure}
-
-\subsubsection{能量与水分守恒}
-
-以单位长度圆柱为例，节点控制体体积记为 \(V_i\)，表面面积记为
-\(A_s=2\pi R\)。总水分和总能量分别为
-\begin{equation}
- M^n=\sum_i C_i^nV_i,\qquad Q^n=\sum_i \rho_i c_{p,i}T_i^nV_i .
-\end{equation}
-内部相邻控制体之间共用同一界面通量，求和时自动抵消，因此总量变化只由表面对流通量决定：
-\begin{align}
- M^n-M^0 &\approx \sum_{m=0}^{n-1} A_sh_m
- (C_{\rm air}^{m+1}-C_s^{m+1})\Delta t,\\
- Q^n-Q^0 &\approx \sum_{m=0}^{n-1} A_sh
- (T_{\rm air}^{m+1}-T_s^{m+1})\Delta t .
-\end{align}
-问题一显式表面更新使用当前表面值，问题二和问题三的半隐式表面更新使用下一时刻表面值，
-守恒检查严格采用与推进公式相同的时间层。以储量变化为分母，定义相对残差
-\begin{equation}
- \varepsilon=\frac{|\Delta S-\Phi_{\rm boundary}|}{\max(|\Delta S|,10^{-12})} .
-\end{equation}
-
-\begin{table}[H]
-\centering
-\caption{守恒残差（全时段最大值）}
-\label{tab:conservation_all}
-\begin{tabular}{lcc}
-\toprule
-问题 & 能量相对残差 & 水分相对残差 \\
-\midrule
-问题一 & $2.93\times10^{-14}$ & $1.02\times10^{-14}$ \\
-问题二 & $1.17\times10^{-14}$ & $6.11\times10^{-14}$ \\
-问题三 & -- & $7.09\times10^{-16}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-所有残差均远小于 1\% 的判据，且图 \ref{fig:validation_conservation} 中储量变化曲线与边界通量积分曲线重合，
-说明离散方程满足全局守恒，边界通量符号和表面控制体更新也相互一致。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/验证_守恒对照_三问.png}
-    \caption{储量变化与边界通量积分的守恒对照}
-    \label{fig:validation_conservation}
-\end{figure}
-
-\subsubsection{物理范围与问题三阈值}
-
-程序在每个时间步检查数组有限性、水分浓度非负以及温度未触及截断范围。
-问题二全时段得到 \(46.0518\le T\le50.0415\ ^\circ\mathrm{C}\)，
-\(0.7281\le C\le2.3745\)；问题三得到 \(28.0\le T\le50.0392\ ^\circ\mathrm{C}\)，
-\(0.0517\le C\le2.55\)，未出现 NaN、无穷值或负水分。
-
-问题三以全域最大含水率
-\(C_{\max}(t)=\max_iC_i(t)\) 作为结束判据，并检查其单调不增性。
-阈值前后相邻 60 s 网格点分别为
-\(C_b=0.150009768\) 和 \(C_a=0.149992897\)。采用线性插值
-\begin{equation}
- t_d=t_b+\frac{0.15-C_b}{C_a-C_b}(t_a-t_b)
-\end{equation}
-得到
-\(t_d=210634.7398\,\mathrm{s}=58.50965\,\mathrm{h}\)，且插值点的
-\(C_{\max}=0.150000000\)。因此该时刻是满足全域含水率限制的最短数值时间。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\linewidth]{pic/q3_阈值判定图.png}
-    \caption{问题三全域最大含水率的阈值判定}
-    \label{fig:q3_threshold_validation}
-\end{figure}
-
 \subsection{误差分析}
-
-数值误差与模型误差分别讨论。由表 \ref{tab:convergence_ratio} 可知，时间步减半后误差约减半，
-空间步减半后误差约变为四分之一，故在当前网格下时间离散误差和空间离散误差均已进入稳定收敛区。
-结果写入 Excel 时统一四舍五入到四位小数，单个数值的舍入误差不超过
-\(5\times10^{-5}\)；5500 s 断点比较的最大误差也小于 \(10^{-4}\)。
-
-模型误差主要来自连续介质假设、圆柱一维径向化、Robin 边界系数和经验物性公式的适用范围，
-以及环境数据插值。由于题目未提供完整实验时空场，本文不能用实验真值给出统计置信区间，
-因此采用独立重算、收敛性、守恒性和物理约束四类互相独立的证据评价结果可靠性。
-这些检验分别对应“文件是否写对”“离散是否收敛”“方程是否守恒”和“结果是否符合物理”，
-共同构成对三问数值答案的交叉证明。
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1160,3 +882,13 @@ q4.cpp
 \end{document}
 
 
+%%%%%双图模板%%%%%%
+\begin{figure}
+\centering
+\subcaptionbox{炉温曲线示意图\label{fig:双图a}}
+{\includegraphics[width=.4\textwidth]{炉温曲线示意图.png}}
+\subcaptionbox{问题1炉温曲线\label{fig:双图b}}
+{\includegraphics[width=.4\textwidth]{问题1炉温曲线.png}}
+\caption{双图}\label{fig:双图}
+\end{figure} 
+%%%%%双图模板%%%%%%
