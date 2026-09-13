@@ -1,4 +1,4 @@
-# 问题二生成数据以及画图
+# 问题二边界识别
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +12,7 @@ input_path = BASE_DIR / 'output_excel' / 'output1.xlsx'
 output_path = BASE_DIR / 'output_excel' / 'output2.xlsx'
 plot_path = BASE_DIR / 'pic' / '验证_稳定时间.png'
 
-# 读取数据
+# 读取边界数据
 try:
     df = pd.read_excel(input_path)
 except FileNotFoundError:
@@ -23,7 +23,7 @@ t = df.iloc[:, 0].to_numpy()
 T = df.iloc[:, 1].to_numpy()
 C = df.iloc[:, 2].to_numpy()
 
-# 计算末尾稳定值（取最后1000个点或后10%，取较小值）
+# 计算稳定值
 tail_n = min(1000, len(T) // 10)
 if tail_n < 10:
     tail_n = 10
@@ -31,23 +31,23 @@ T_stable = np.mean(T[-tail_n:])
 C_stable = np.mean(C[-tail_n:])
 print(f"计算得到稳定值：T = {T_stable:.4f}, C = {C_stable:.4f}")
 
-# 划定5%误差带
+# 设定5%误差带
 tol_T = 0.05 * abs(T_stable)
 tol_C = 0.05 * abs(C_stable)
 
-# 判断每个时刻是否同时满足（两者必须都在误差带内）
+# 判断是否稳定
 cond_T = np.abs(T - T_stable) <= tol_T
 cond_C = np.abs(C - C_stable) <= tol_C
 cond_both = cond_T & cond_C
 
-# 从后往前找，找到第一个不满足条件的位置，其下一个位置即为稳定起点
+# 确定稳定起点
 idx_start = 0
 for i in range(len(cond_both) - 1, -1, -1):
     if not cond_both[i]:
         idx_start = i + 1
         break
 
-# 统计稳定阶段数据
+# 统计稳定阶段
 if idx_start < len(t):
     t_stable_point = t[idx_start]
     print(f"\n温度和水分从 t = {t_stable_point:.2f} 开始基本不变（同时满足5%误差带）。")
@@ -87,18 +87,18 @@ color_C = 'tab:blue'
 ax2.set_ylabel('水分浓度 C', color=color_C)
 ax2.plot(t, C, color=color_C, label='水分浓度')
 ax2.tick_params(axis='y', labelcolor=color_C)
-ax2.set_ylim(0, 0.2)  # 修改右轴范围为 0 到 1
+ax2.set_ylim(0, 0.2)  # 右轴范围
 
-# 绘制5%误差带（水平虚线）
+# 绘制误差带
 ax1.axhline(y=T_stable + tol_T, color='gray', linestyle=':', alpha=0.6)
 ax1.axhline(y=T_stable - tol_T, color='gray', linestyle=':', alpha=0.6)
 ax2.axhline(y=C_stable + tol_C, color='gray', linestyle=':', alpha=0.6)
 ax2.axhline(y=C_stable - tol_C, color='gray', linestyle=':', alpha=0.6)
 
-# 标注稳定起始点（无箭头）
+# 标注稳定起点
 if t_stable_point is not None:
     ax1.axvline(x=t_stable_point, color='green', linestyle='--', linewidth=2)
-    # 标注文字
+    # 添加文字
     ax1.text(t_stable_point + (t[-1]-t[0])*0.02, np.max(T)*0.95, 
              f'同时稳定起点\nt={t_stable_point:.1f}s', 
              color='green', fontsize=12, verticalalignment='top')

@@ -1,18 +1,12 @@
-"""问题二：恒温段求解、输出与检验。"""
+# 问题二恒温段求解和检验
 
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial Unicode MS"]
-plt.rcParams["axes.unicode_minus"] = False
-
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "output_excel"
-PIC_DIR = BASE_DIR / "pic"
 DEFAULT_INITIAL_FILE = OUTPUT_DIR / "output3.xlsx"
 DEFAULT_BOUNDARY_FILE = OUTPUT_DIR / "output2.xlsx"
 INITIAL_TIME = 5500.0
@@ -25,7 +19,7 @@ def _as_scalar_or_array(value):
 
 
 def get_boundary_funcs(path=DEFAULT_BOUNDARY_FILE, t_start=INITIAL_TIME):
-    """读取边界，不向前外推。"""
+    # 读取边界
     path = Path(path)
     if not path.is_absolute():
         path = BASE_DIR / path
@@ -77,7 +71,7 @@ def get_boundary_funcs(path=DEFAULT_BOUNDARY_FILE, t_start=INITIAL_TIME):
 
 
 def load_initial_profile(path=DEFAULT_INITIAL_FILE, r_max=0.02, Nr=21):
-    """读取 5500 s 剖面并插值。"""
+    # 读取5500 s剖面
     path = Path(path)
     if not path.is_absolute():
         path = BASE_DIR / path
@@ -94,7 +88,7 @@ def load_initial_profile(path=DEFAULT_INITIAL_FILE, r_max=0.02, Nr=21):
     T0_data = df.iloc[:, 1].to_numpy(dtype=float)
     C0_data = df.iloc[:, 2].to_numpy(dtype=float)
 
-    # 删除空行
+    # 删除空值
     mask = np.isfinite(radius_cm) & np.isfinite(T0_data) & np.isfinite(C0_data)
     radius_cm = radius_cm[mask]
     T0_data = T0_data[mask]
@@ -103,11 +97,11 @@ def load_initial_profile(path=DEFAULT_INITIAL_FILE, r_max=0.02, Nr=21):
     if len(radius_cm) < 2 or np.any(np.diff(radius_cm) <= 0):
         raise ValueError("output3.xlsx半径必须严格递增")
 
-    # 检查半径范围
+    # 检查半径
     if radius_cm[0] > 1e-12:
         raise ValueError("output3.xlsx第一行半径必须为0cm")
 
-    # 缺少 2.0 cm 时补节点
+    # 补齐2.0 cm节点
     if radius_cm[-1] < r_max * 100 - 1e-12:
         if abs(radius_cm[-1] - (r_max*100-0.1)) < 1e-8:
             radius_cm = np.append(radius_cm, r_max*100)
@@ -140,7 +134,7 @@ def load_initial_profile(path=DEFAULT_INITIAL_FILE, r_max=0.02, Nr=21):
     return r, T0, C0
 
 
-# 附录 3 物性公式
+# 附录3物性公式
 def rho_of_C(C_val):
     return 650.0 + 128.0 * C_val
 
@@ -161,7 +155,7 @@ def D_of_CT(C_val, T_val):
 
 
 def solve_tridiag(a, b, c, d):
-    """追赶法求解三对角方程。"""
+    # 追赶法
     n = len(b)
     cp = np.zeros(n)
     dp = np.zeros(n)
@@ -195,7 +189,7 @@ def solve_pde(
     T_air_func=None,
     C_air_func=None,
 ):
-    """求解恒温段，t 为经过时间，边界用绝对时间。"""
+    # 求解恒温段
     if dt <= 0 or dr <= 0 or r_max <= 0 or t_end < 0:
         raise ValueError("dt, dr and r_max must be positive; t_end cannot be negative")
     if (T_air_func is None) != (C_air_func is None):
@@ -276,7 +270,7 @@ def solve_pde(
         C_s_T = C[n, i_s]
         rho_s_T = rho_of_C(C_s_T)
         cp_s_T = cp_of_C(C_s_T)
-        # 表面界面取两节点平均物性
+        # 表面平均物性
         k_s_T = k_of_C(0.5 * (C[n, i_s - 1] + C[n, i_s]))
         beta_T = dt / (rho_s_T * cp_s_T * V_factor * dr**2)
         coef_s_T_diff = 2.0 * (i_s - 0.5) * k_s_T
@@ -303,7 +297,7 @@ def solve_pde(
         c_C[0] = -4.0 * alpha_C_inner * D_01
         d_C[0] = C[n, 0]
 
-        # 共用表面界面扩散系数
+        # 表面界面扩散系数
         D_s_C = D_of_CT(
             0.5 * (C[n, i_s - 1] + C[n, i_s]),
             0.5 * (T[n, i_s - 1] + T[n, i_s]),
@@ -331,7 +325,7 @@ def _solve_for_validation(dt, dr, t_end=1800.0):
 
 
 def verify_initial_profile():
-    """检查初值是否等于 output3.xlsx。"""
+    # 检查初值
     _, T0, C0 = load_initial_profile(DEFAULT_INITIAL_FILE, r_max=0.02, Nr=21)
     t, r, T, C = _solve_for_validation(1.0, 0.001, t_end=0.0)
     err_T = float(np.max(np.abs(T[0] - T0)))
@@ -432,14 +426,14 @@ def verify_conservation(t_end=DEFAULT_SIMULATION_TIME):
     A_surf = 2.0 * np.pi * r_surf
 
     M = np.sum(C * V, axis=1)
-    # 使用与表面方程相同的离散通量
+    # 表面离散通量
     C_air_next = np.asarray(C_func(INITIAL_TIME + t[1:]), dtype=float)
     m_flux_step = hm * A_surf * (C_air_next - C[1:, -1])
     M_flux_int = np.concatenate([[0.0], np.cumsum(m_flux_step * dt)])
     M_change = M - M[0]
     moisture_rel_err = abs(M_change[-1] - M_flux_int[-1]) / max(abs(M_change[-1]), 1e-12)
 
-    # 按离散方程计算蓄热量
+    # 计算蓄热量
     thermal_storage = np.sum(
         rho_of_C(C[:-1]) * cp_of_C(C[:-1]) * (T[1:] - T[:-1]) * V,
         axis=1,
@@ -480,7 +474,7 @@ def save_problem2_results(
     dr=0.001,
     t_end=DEFAULT_SIMULATION_TIME,
 ):
-    """保存问题二四个结果表，时间从 0 开始。"""
+    # 保存问题二结果
     T_func, C_func = get_boundary_funcs(t_start=INITIAL_TIME)
     t, r, T, C = solve_pde(
         dt, dr, t_end=t_end, t_start=INITIAL_TIME,
@@ -497,11 +491,11 @@ def save_problem2_results(
     target_hours = np.arange(0.5, 3.0 + 1e-12, 0.5)
     target_seconds = np.rint(target_hours * 3600.0).astype(int)
     target_radii = ["0.0", "0.5", "1.0", "1.5", "2.0"]
-    # 按目标秒数取样，避免浮点时间比较误差
+    # 取目标时刻
     sample_idx = [int(np.argmin(np.abs(time_s - value))) for value in target_seconds]
     df_T_sample = df_T.iloc[sample_idx][["时间"] + target_radii].copy()
     df_C_sample = df_C.iloc[sample_idx][["时间"] + target_radii].copy()
-    # 摘要表改用小时
+    # 摘要表用小时
     df_T_sample["时间"] = df_T_sample["时间"] / 3600.0
     df_C_sample["时间"] = df_C_sample["时间"] / 3600.0
 
@@ -527,7 +521,7 @@ def save_problem2_results(
             frame.to_excel(pending, index=False)
             print(f"文件被占用，已写入临时结果：{pending}")
 
-    # 按题目格式保存双工作表文件
+    # 保存双工作表
     result2_file = OUTPUT_DIR / "result2.xlsx"
     try:
         with pd.ExcelWriter(result2_file) as writer:
@@ -548,54 +542,12 @@ def save_problem2_results(
 
 
 def plot_problem2_results(t, r, T, C):
-    """绘制问题二温度、水分和热力图。"""
-    PIC_DIR.mkdir(parents=True, exist_ok=True)
-    time_h = t / 3600.0
-    target_r = [0.0, 0.5, 1.0, 1.5, 2.0]
-    target_idx = [int(np.argmin(np.abs(r * 100.0 - value))) for value in target_r]
-
-    plt.figure(figsize=(10, 6))
-    for radius, idx in zip(target_r, target_idx):
-        plt.plot(time_h, C[:, idx], label=f"r={radius:g} cm")
-    plt.xlabel("时间 t (h)")
-    plt.ylabel("水分浓度 C (kg/kg)")
-    plt.grid(alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / "q2_水分时间演化图.png", dpi=300)
-    plt.close()
-
-    plt.figure(figsize=(10, 6))
-    for radius, idx in zip(target_r, target_idx):
-        plt.plot(time_h, T[:, idx], label=f"r={radius:g} cm")
-    plt.xlabel("时间 t (h)")
-    plt.ylabel("温度 T (°C)")
-    plt.grid(alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / "q2_温度时间演化图.png", dpi=300)
-    plt.close()
-
-    fig, axes = plt.subplots(1, 2, figsize=(16, 5))
-    extent = [time_h[0], time_h[-1], r[0] * 100.0, r[-1] * 100.0]
-    im0 = axes[0].imshow(T.T, origin="lower", aspect="auto", extent=extent, cmap="YlOrRd")
-    axes[0].set_xlabel("时间 t (h)")
-    axes[0].set_ylabel("半径 r (cm)")
-    axes[0].set_title("温度时空分布")
-    fig.colorbar(im0, ax=axes[0], label="温度 (°C)")
-    im1 = axes[1].imshow(C.T, origin="lower", aspect="auto", extent=extent, cmap="Blues_r")
-    axes[1].set_xlabel("时间 t (h)")
-    axes[1].set_ylabel("半径 r (cm)")
-    axes[1].set_title("水分时空分布")
-    fig.colorbar(im1, ax=axes[1], label="水分浓度 (kg/kg)")
-    fig.tight_layout()
-    fig.savefig(PIC_DIR / "q2_温度和水分热力图.png", dpi=300)
-    plt.close(fig)
+    # 结果图统一由 plot_condensed.py 生成
+    return None
 
 
 if __name__ == "__main__":
     _, t_result, r_result, T_result, C_result = save_problem2_results()
-    plot_problem2_results(t_result, r_result, T_result, C_result)
     verify_initial_profile()
     verify_time_step()
     verify_space_step()

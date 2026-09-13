@@ -1,20 +1,14 @@
-# 1. 时间步收敛  2. 空间步长收敛  3. 守恒检查
+# 时间步、空间步和守恒检验
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.interpolate import PchipInterpolator
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / 'output_excel'
-PIC_DIR = BASE_DIR / 'pic'
-
-plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei',
-                                   'Arial Unicode MS', 'PingFang SC']
-plt.rcParams['axes.unicode_minus'] = False
 
 
-# 读取边界条件，返回 T_air(t), C_air(t)
+# 读取边界函数
 def get_boundary_funcs():
     path = OUTPUT_DIR / 'output1.xlsx'
     df = pd.read_excel(path)
@@ -28,7 +22,7 @@ def get_boundary_funcs():
     print(f'已读取 {path} 作为边界条件')
     return T_func, C_func
 
-# 求解 PDE，返回 t, r, T, C
+# 求解温度和水分
 def solve_pde(dt, dr, r_max=0.02, t_end=1800.0,
               T_air_func=None, C_air_func=None):
     if T_air_func is None or C_air_func is None:
@@ -50,8 +44,8 @@ def solve_pde(dt, dr, r_max=0.02, t_end=1800.0,
     C[0, :] = 2.55
 
     r_inner = r[1:-1]
-    coef_p = 1.0 + dr / (2.0 * r_inner)   # r_{i+1/2}/r_i
-    coef_m = 1.0 - dr / (2.0 * r_inner)   # r_{i-1/2}/r_i
+    coef_p = 1.0 + dr / (2.0 * r_inner)   # 外侧几何系数
+    coef_m = 1.0 - dr / (2.0 * r_inner)   # 内侧几何系数
 
     # 水分扩散系数
     def D_of_C(Cval):
@@ -59,36 +53,36 @@ def solve_pde(dt, dr, r_max=0.02, t_end=1800.0,
 
     stab_T = 4.0 * alpha * dt / dr**2
     if stab_T >= 1.0:
-        print(f'  [!] dt={dt}, dr={dr} 时 4α·dt/dr² = {stab_T:.3f} >= 1，可能不稳定')
+        print(f'  [!] dt={dt}, dr={dr} 时 4*alpha*dt/dr^2 = {stab_T:.3f} >= 1，可能不稳定')
 
     for n in range(Nt - 1):
         T_air_next = float(T_air_func(t[n + 1]))
         C_air_next = float(C_air_func(t[n + 1]))
 
-        # 温度：内部节点（不变）
+        # 温度内部节点
         T[n + 1, 1:-1] = T[n, 1:-1] + alpha * dt / dr**2 * (
             coef_p * T[n, 2:] - 2.0 * T[n, 1:-1] + coef_m * T[n, :-2]
         )
 
-        # 水分：内部节点（有限体积，D 用界面值）
+        # 水分内部节点
         C_inner = C[n, 1:-1]
         C_left = C[n, :-2]
         C_right = C[n, 2:]
-        D_L = D_of_C(0.5 * (C_left + C_inner))    # D_{i-1/2}
-        D_R = D_of_C(0.5 * (C_inner + C_right))   # D_{i+1/2}
+        D_L = D_of_C(0.5 * (C_left + C_inner))    # 左界面系数
+        D_R = D_of_C(0.5 * (C_inner + C_right))   # 右界面系数
         C[n + 1, 1:-1] = C_inner + dt / dr**2 * (
             coef_p * D_R * (C_right - C_inner)
             + coef_m * D_L * (C_left - C_inner)
         )
 
-        # 温度：中心节点（不变）
+        # 温度中心节点
         T[n + 1, 0] = T[n, 0] + 4.0 * alpha * dt / dr**2 * (T[n, 1] - T[n, 0])
 
-        # 水分：中心节点（D 用界面 D_{1/2}）
+        # 水分中心节点
         D_01 = D_of_C(0.5 * (C[n, 0] + C[n, 1]))
         C[n + 1, 0] = C[n, 0] + 4.0 * D_01 * dt / dr**2 * (C[n, 1] - C[n, 0])
 
-        # 温度：表面控制体
+        # 温度表面节点
         i_s = Nr - 1
         V_factor = i_s - 0.25
         T[n + 1, -1] = T[n, -1] + dt * (
@@ -98,10 +92,10 @@ def solve_pde(dt, dr, r_max=0.02, t_end=1800.0,
             / (rho * Cp * V_factor * dr)
         )
 
-        # 水分：表面节点（有限体积，严格守恒）
+        # 水分表面节点
         i_s = Nr - 1
-        D_sm = D_of_C(0.5 * (C[n, i_s - 1] + C[n, i_s]))   # D_{N-3/2}
-        V_factor = i_s - 0.25                                # 表面控制体体积 / (π dr²)
+        D_sm = D_of_C(0.5 * (C[n, i_s - 1] + C[n, i_s]))   # 表面界面系数
+        V_factor = i_s - 0.25                                # 表面控制体系数
         C[n + 1, -1] = C[n, -1] + dt * (
             2.0 * (i_s - 0.5) * D_sm * (C[n, i_s - 1] - C[n, -1]) / (V_factor * dr**2)
             + 2.0 * i_s * hm * (C_air_next - C[n, -1]) / (V_factor * dr)
@@ -109,7 +103,7 @@ def solve_pde(dt, dr, r_max=0.02, t_end=1800.0,
 
     return t, r, T, C
 
-# 验证1：时间步收敛
+# 时间步收敛
 def verify_time_step():
     print('\n时间步收敛验证')
 
@@ -123,7 +117,7 @@ def verify_time_step():
         t, r, T, C = solve_pde(dt, dr, T_air_func=T_func, C_air_func=C_func)
         results[dt] = (t, r, T, C)
 
-    # 共同时间点比较
+    # 比较共同时间点
     common_t = np.arange(0, 1801, 100)
     T_common, C_common = {}, {}
     for dt in dt_list:
@@ -155,43 +149,7 @@ def verify_time_step():
             and err_T_1_05 < 0.1 and err_C_1_05 < 0.01):
         raise AssertionError('问题一时间步收敛未通过')
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-
-    for dt in dt_list:
-        t, r, T, C = results[dt]
-        axes[0].plot(t, T[:, 0], label=f'dt={dt}s')
-        axes[1].plot(t, C[:, -1], label=f'dt={dt}s')
-
-    axes[0].set_xlabel('时间 t (s)')
-    axes[0].set_ylabel('中心温度 T (°C)')
-    axes[0].set_title('中心温度随时间变化（不同 dt）')
-    axes[0].legend()
-    axes[0].grid(alpha=0.3)
-
-    axes[1].set_xlabel('时间 t (s)')
-    axes[1].set_ylabel('表面水分 C')
-    axes[1].set_title('表面水分随时间变化（不同 dt）')
-    axes[1].legend()
-    axes[1].grid(alpha=0.3)
-
-    dt_err = np.array([0.5, 0.25])
-    err_T = np.array([err_T_1_05, err_T_05_025])
-    err_C = np.array([err_C_1_05, err_C_05_025])
-    axes[2].loglog(dt_err, err_T, 'o-', label='温度误差')
-    axes[2].loglog(dt_err, err_C, 's-', label='水分误差')
-    axes[2].set_xlabel('dt (s)')
-    axes[2].set_ylabel('最大绝对误差')
-    axes[2].set_title('时间步收敛误差（log-log）')
-    axes[2].legend()
-    axes[2].grid(alpha=0.3, which='both')
-
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / '验证_时间步收敛.png', dpi=300, bbox_inches='tight')
-    plt.show()
-    plt.close()
-
-
-# 验证2：空间步长收敛
+# 空间步收敛
 def verify_space_step():
     print('\n空间步长收敛验证')
 
@@ -205,7 +163,7 @@ def verify_space_step():
         t, r, T, C = solve_pde(dt, dr, T_air_func=T_func, C_air_func=C_func)
         results[dr] = (t, r, T, C)
 
-    # 共同半径点比较
+    # 比较共同半径点
     common_r = np.array([0.0, 0.005, 0.01, 0.015, 0.02])
     T_final, C_final = {}, {}
     for dr in dr_list:
@@ -236,43 +194,7 @@ def verify_space_step():
             and err_T_1_05 < 0.05 and err_C_1_05 < 0.005):
         raise AssertionError('问题一空间步收敛未通过')
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-
-    for dr in dr_list:
-        t, r, T, C = results[dr]
-        axes[0].plot(r * 100, T[-1, :], 'o-', label=f'dr={dr*1000:.2f}mm')
-        axes[1].plot(r * 100, C[-1, :], 'o-', label=f'dr={dr*1000:.2f}mm')
-
-    axes[0].set_xlabel('半径 r (cm)')
-    axes[0].set_ylabel('最终温度 T (°C)')
-    axes[0].set_title('最终温度沿半径分布（不同 dr）')
-    axes[0].legend()
-    axes[0].grid(alpha=0.3)
-
-    axes[1].set_xlabel('半径 r (cm)')
-    axes[1].set_ylabel('最终水分 C')
-    axes[1].set_title('最终水分沿半径分布（不同 dr）')
-    axes[1].legend()
-    axes[1].grid(alpha=0.3)
-
-    dr_err = np.array([0.0005, 0.00025])
-    err_T = np.array([err_T_1_05, err_T_05_025])
-    err_C = np.array([err_C_1_05, err_C_05_025])
-    axes[2].loglog(dr_err, err_T, 'o-', label='温度误差')
-    axes[2].loglog(dr_err, err_C, 's-', label='水分误差')
-    axes[2].set_xlabel('dr (m)')
-    axes[2].set_ylabel('最大绝对误差')
-    axes[2].set_title('空间步长收敛误差（log-log）')
-    axes[2].legend()
-    axes[2].grid(alpha=0.3, which='both')
-
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / '验证_空间步长收敛.png', dpi=300, bbox_inches='tight')
-    plt.show()
-    plt.close()
-
-
-# 验证3：守恒检查
+# 守恒检验
 def verify_conservation():
     print('\n守恒检查')
 
@@ -296,7 +218,7 @@ def verify_conservation():
     r_surf = (Nr - 1) * dr
     V[-1] = np.pi * (r_surf**2 - (r_surf - dr / 2.0)**2)
 
-    # 总能量、总水分
+    # 总能量和总水分
     Q = np.sum(rho * Cp * T * V, axis=1)
     M = np.sum(C * V, axis=1)
 
@@ -304,7 +226,7 @@ def verify_conservation():
     T_air_arr = np.array([float(T_func(tt)) for tt in t])
     C_air_arr = np.array([float(C_func(tt)) for tt in t])
 
-    # 表面通量取 n+1 时刻环境值和 n 时刻表面值
+    # 计算表面通量
     q_step = h * A_surf * (T_air_arr[1:] - T[:-1, -1])
     m_step = hm * A_surf * (C_air_arr[1:] - C[:-1, -1])
     Q_flux_int = np.concatenate([[0.0], np.cumsum(q_step * dt)])
@@ -327,40 +249,8 @@ def verify_conservation():
     if rel_err_Q[-1] >= 0.01 or rel_err_M[-1] >= 0.01:
         raise AssertionError('问题一守恒检验未通过')
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-
-    axes[0].plot(t, Q_change, label='总能量变化')
-    axes[0].plot(t, Q_flux_int, '--', label='边界热流积分')
-    axes[0].set_xlabel('时间 t (s)')
-    axes[0].set_ylabel('能量变化 (J/m)')
-    axes[0].set_title('能量守恒检查')
-    axes[0].legend()
-    axes[0].grid(alpha=0.3)
-
-    axes[1].plot(t, M_change, label='总水分变化')
-    axes[1].plot(t, M_flux_int, '--', label='边界质流积分')
-    axes[1].set_xlabel('时间 t (s)')
-    axes[1].set_ylabel('水分变化')
-    axes[1].set_title('水分守恒检查')
-    axes[1].legend()
-    axes[1].grid(alpha=0.3)
-
-    axes[2].plot(t, rel_err_Q, label='能量相对误差')
-    axes[2].plot(t, rel_err_M, label='水分相对误差')
-    axes[2].set_xlabel('时间 t (s)')
-    axes[2].set_ylabel('相对误差')
-    axes[2].set_title('守恒相对误差')
-    axes[2].legend()
-    axes[2].grid(alpha=0.3)
-
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / '验证_守恒检查.png', dpi=300, bbox_inches='tight')
-    plt.show()
-    plt.close()
-
-
 if __name__ == '__main__':
     verify_time_step()
     verify_space_step()
     verify_conservation()
-    print('\n全部验证完成，已生成 3 张图。')
+    print('\n全部验证完成。结果图请运行 plot_condensed.py，验证图请运行 validate_all.py。')

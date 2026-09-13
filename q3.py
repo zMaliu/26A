@@ -1,4 +1,4 @@
-"""问题三：计算达到含水率阈值的时间。"""
+# 问题三干燥时间计算
 
 from pathlib import Path
 
@@ -17,7 +17,6 @@ from q2_3 import (
 )
 
 
-PIC_DIR = BASE_DIR / "pic"
 MOISTURE_LIMIT = 0.15
 MAX_ABSOLUTE_TIME = 259200.0  # 最长3天
 DT = 60.0
@@ -26,7 +25,7 @@ R_MAX = 0.02
 
 
 def get_full_boundary_funcs():
-    """拼接两段环境边界。"""
+    # 拼接两段边界
     T_pre, C_pre = get_boundary_funcs(
         path=OUTPUT_DIR / "output1.xlsx", t_start=0.0
     )
@@ -58,18 +57,18 @@ def get_full_boundary_funcs():
 
 
 def get_simulation_end(max_absolute_time=MAX_ABSOLUTE_TIME, dt=DT):
-    """返回最大时间内的整步终点。"""
+    # 计算整步终点
     if max_absolute_time < 0 or dt <= 0:
         raise ValueError("时间参数必须为正")
     return float(np.floor(max_absolute_time / dt) * dt)
 
 
 def solve_problem3(dt=DT, dr=DR, t_end=None):
-    """从原始初态计算到阈值或最大时长。"""
+    # 计算至阈值或终点
     if t_end is None:
         t_end = get_simulation_end(dt=dt)
 
-    # 第三问按全过程计时，5500 s 后切换恒温边界。
+    # 5500 s后切换恒温边界
     T_func, C_func = get_full_boundary_funcs()
     t, r, T, C = solve_pde(
         dt=dt,
@@ -93,7 +92,7 @@ def solve_problem3(dt=DT, dr=DR, t_end=None):
     if j == 0:
         drying_time = 0.0
     else:
-        # 相邻时间点线性插值
+        # 线性插值结束时刻
         t0, t1 = t[j - 1], t[j]
         c0, c1 = max_C[j - 1], max_C[j]
         drying_time = float(
@@ -103,7 +102,7 @@ def solve_problem3(dt=DT, dr=DR, t_end=None):
 
 
 def _select_rows(t, times):
-    """按目标时间取最近行。"""
+    # 取最近时间行
     rows = []
     for target in times:
         if target < t[0] - 1e-9 or target > t[-1] + 1e-9:
@@ -113,7 +112,7 @@ def _select_rows(t, times):
 
 
 def verify_q2_checkpoint():
-    """核对 5500 s 剖面。"""
+    # 核对5500 s剖面
     if not DEFAULT_INITIAL_FILE.exists():
         raise FileNotFoundError(f"未找到问题二初始文件：{DEFAULT_INITIAL_FILE}")
     T_func, C_func = get_boundary_funcs(
@@ -146,7 +145,7 @@ def save_problem3_results(
     output_file=OUTPUT_DIR / "result3.xlsx",
     summary_file=OUTPUT_DIR / "result3_summary.xlsx",
 ):
-    """保存 60 s 完整表和 6 h 摘要。"""
+    # 保存完整表和摘要
     t_raw, r, T_raw, C_raw, drying_time, max_C_raw = solve_problem3()
 
     if drying_time is None:
@@ -155,7 +154,7 @@ def save_problem3_results(
         end_label = f"最大计算时长内未达到 {MOISTURE_LIMIT:g}"
     else:
         end_idx = int(np.flatnonzero(max_C_raw <= MOISTURE_LIMIT)[0])
-        # 保留结束前的整步，并追加插值结束行
+        # 保留整步并追加结束行
         t = t_raw[:end_idx]
         T = T_raw[:end_idx]
         C = C_raw[:end_idx]
@@ -183,7 +182,7 @@ def save_problem3_results(
     df_full = pd.DataFrame(np.round(C, 4), columns=radii_cm)
     df_full.insert(0, "时间", time_s)
 
-    # 规则时间点为 6 h 的整数倍
+    # 取6 h整数倍
     regular_hours = np.arange(
         6.0, np.floor(end_time / 21600.0) * 6.0 + 1e-12, 6.0
     )
@@ -233,7 +232,7 @@ def save_problem3_results(
 
 
 def verify_problem3():
-    """检查初值、阈值、单调性和范围。"""
+    # 检查初值、阈值和范围
     print("\n问题三数值检验")
     verify_q2_checkpoint()
     _, _, t, r, T, C, drying_time, max_C = save_problem3_results()
@@ -266,13 +265,13 @@ def verify_problem3():
     if np.any(C < -1e-12):
         raise AssertionError("问题三出现负水分浓度")
     if not np.all(np.diff(max_C) <= 1e-10):
-        raise AssertionError("全域最大含水率不是单调不增")
+        raise AssertionError("全域最大水分浓度不是单调不增")
 
     return drying_time
 
 
 def verify_time_step(t_end=21600.0):
-    """比较时间步误差。"""
+    # 检查时间步收敛
     print("\n问题三时间步收敛")
     dt_list = [60.0, 30.0, 15.0]
     results = {dt: solve_problem3(dt=dt, dr=DR, t_end=t_end) for dt in dt_list}
@@ -289,7 +288,7 @@ def verify_time_step(t_end=21600.0):
 
 
 def verify_space_step(t_end=21600.0):
-    """比较空间步误差。"""
+    # 检查空间步收敛
     print("\n问题三空间步长收敛")
     dr_list = [0.001, 0.0005, 0.00025]
     results = {dr: solve_problem3(dt=DT, dr=dr, t_end=t_end) for dr in dr_list}
@@ -305,7 +304,7 @@ def verify_space_step(t_end=21600.0):
 
 
 def verify_conservation(t_end=21600.0):
-    """检查水分守恒。"""
+    # 检查水分守恒
     print("\n问题三水分守恒")
     T_func, C_func = get_full_boundary_funcs()
     t, r, _, C = solve_pde(
@@ -338,61 +337,12 @@ def verify_conservation(t_end=21600.0):
 
 
 def plot_problem3_results(t, r, C, drying_time):
-    """绘制含水率曲线和热力图。"""
-    import matplotlib.pyplot as plt
-
-    PIC_DIR.mkdir(parents=True, exist_ok=True)
-    time_h = t / 3600.0
-    target_r = [0.0, 0.5, 1.0, 1.5, 2.0]
-    target_idx = [int(round(x / (r[1] * 100.0))) for x in target_r]
-
-    plt.figure(figsize=(10, 6))
-    for radius, idx in zip(target_r, target_idx):
-        plt.plot(time_h, C[:, idx], label=f"r={radius:g} cm")
-    plt.axhline(MOISTURE_LIMIT, color="red", linestyle="--", label="C=0.15")
-    if drying_time is not None:
-        plt.axvline(drying_time / 3600.0, color="green", linestyle="--", label="结束时间")
-    plt.xlabel("时间 t (h)")
-    plt.ylabel("水分浓度 C (kg/kg)")
-    plt.grid(alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / "q3_水分时间演化图.png", dpi=300)
-    plt.close()
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(time_h, np.max(C, axis=1), label="全域最大水分浓度")
-    plt.axhline(MOISTURE_LIMIT, color="red", linestyle="--", label="阈值 0.15")
-    if drying_time is not None:
-        plt.axvline(drying_time / 3600.0, color="green", linestyle="--", label="结束时间")
-    plt.xlabel("时间 t (h)")
-    plt.ylabel("max(C) (kg/kg)")
-    plt.grid(alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(PIC_DIR / "q3_阈值判定图.png", dpi=300)
-    plt.close()
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    im = ax.imshow(
-        C.T,
-        origin="lower",
-        aspect="auto",
-        extent=[time_h[0], time_h[-1], r[0] * 100.0, r[-1] * 100.0],
-        cmap="Blues_r",
-    )
-    ax.set_xlabel("时间 t (h)")
-    ax.set_ylabel("半径 r (cm)")
-    ax.set_title("水分时空分布")
-    fig.colorbar(im, ax=ax, label="水分浓度 (kg/kg)")
-    fig.tight_layout()
-    fig.savefig(PIC_DIR / "q3_水分热力图.png", dpi=300)
-    plt.close(fig)
+    # 结果图统一由 plot_condensed.py 生成
+    return None
 
 
 if __name__ == "__main__":
     result = save_problem3_results()
-    plot_problem3_results(result[2], result[3], result[5], result[6])
     verify_problem3()
     verify_time_step()
     verify_space_step()
