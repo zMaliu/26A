@@ -1,0 +1,689 @@
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{float}
+
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.35em}
+\numberwithin{equation}{section}
+
+\title{中药材热风干燥问题的模型建立与数值求解}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{统一建模框架}
+
+\subsection{研究对象与基本假设}
+
+将药材视为等效均匀连续介质。药材近似为长度
+\(L=0.25\,\mathrm{m}\)、初始半径 \(R_0=0.02\,\mathrm{m}\) 的圆柱体。
+由于初始温度和含水率在径向上均匀，且题目没有给出端面和圆周方向的边界差异，
+忽略轴向和圆周方向的传递，只考虑半径方向的变化。长度在径向控制方程中约去，
+守恒量按单位轴向长度计算。
+
+记 \(r\) 为距圆柱中心的径向距离，\(T(r,t)\) 为药材温度，
+\(C(r,t)\) 为干基水分浓度，\(t\) 为时间。温度数值均以摄氏度表示；
+经验公式中使用开尔文温度
+\[
+T_K=T+273.15.
+\]
+药材初始状态为
+\[
+T(r,0)=T_0=28^\circ\mathrm{C},\qquad
+C(r,0)=C_0=2.55\,\mathrm{kg/kg}.
+\]
+
+\subsection{统一的热质传递方程}
+
+在固定半径区域 \(0<r<R\) 内，温度和水分分别满足
+\begin{align}
+\rho(C)c_p(C)\frac{\partial T}{\partial t}
+&=\frac{1}{r}\frac{\partial}{\partial r}
+\left(rk(C)\frac{\partial T}{\partial r}\right), \label{eq:common-T}\\
+\frac{\partial C}{\partial t}
+&=\frac{1}{r}\frac{\partial}{\partial r}
+\left(rD(C,T)\frac{\partial C}{\partial r}\right). \label{eq:common-C}
+\end{align}
+问题一中的 \(\rho,c_p,k\) 为常数，\(D\) 仅依赖 \(C\)；
+问题二和问题三使用附录3的变物性关系；问题四使用附录4关系并进一步考虑半径变化。
+
+圆柱中心采用轴对称条件
+\begin{equation}
+\left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\qquad
+\left.\frac{\partial C}{\partial r}\right|_{r=0}=0. \label{eq:center-bc}
+\end{equation}
+表面采用第三类边界条件。以从药材指向空气的径向为正，表面 \(r=R(t)\) 处有
+\begin{align}
+-k(C_s)\left.\frac{\partial T}{\partial r}\right|_{r=R(t)}
+&=h\,[T_s-T_{\mathrm{air}}(t)], \label{eq:surface-T}\\
+-D(C_s,T_s)\left.\frac{\partial C}{\partial r}\right|_{r=R(t)}
+&=h_m\,[C_s-C_{\mathrm{air}}(t)], \label{eq:surface-C}
+\end{align}
+其中 \(T_s=T(R(t),t)\)、\(C_s=C(R(t),t)\)，
+\(h=25\,\mathrm{W/(m^2\cdot K)}\)，
+\(h_m=8\times10^{-7}\,\mathrm{m/s}\)。
+在离散更新式中，边界通量等价地写成
+\(h(T_{\mathrm{air}}-T_s)\) 和
+\(h_m(C_{\mathrm{air}}-C_s)\)，与程序中的源项符号一致。
+
+\subsection{环境数据处理与两阶段约定}
+
+附件1给出离散时刻的烘房温度和空气水分浓度。问题一先用
+PCHIP（分段三次 Hermite 保形插值）将原始数据插值到 \(1\,\mathrm{s}\) 网格，
+生成 \texttt{output1.xlsx}。问题二至问题四调用边界时采用离散数据的分段线性插值；
+当查询时间超过数据末端时，取末尾 \(1000\) 个数据点的均值作常值延拓。
+
+由附件1的稳定性判据得到约 \(5439\,\mathrm{s}\) 的稳定起点。为了使阶段初值、
+边界切换和输出时间原点统一，程序取
+\[
+t_s=5500\,\mathrm{s}.
+\]
+因此，所有全过程计算均按
+\[
+\mathcal{B}(t)=
+\begin{cases}
+(T_1(t),C_1(t)),&0\le t\le t_s,\\
+(T_2(t),C_2(t)),&t>t_s,
+\end{cases}
+\]
+调用边界。其中第一段为附件1的变化边界，第二段为稳定阶段边界。
+问题二的结果表以 \(t_s\) 为新的时间原点，表中 \(0\)--\(10800\,\mathrm{s}\)
+表示绝对时间 \(5500\)--\(16300\,\mathrm{s}\)；问题三和问题四从原始
+\(t=0\) 开始计时。
+
+\subsection{数值保护约定}
+
+程序在每一步求解后检查数组是否有限，并对经验公式的输入作物理范围保护：
+问题二、三中评价 \(D(C,T)\) 时将 \(C\) 限制在
+\([0.05,10]\)、\(T_K\) 限制在 \([273.15,373.15]\,\mathrm{K}\)，
+并将 \(D\) 限制在 \([10^{-14},10^{-3}]\,\mathrm{m^2/s}\)；
+问题四采用同样的温度和扩散系数保护。状态量的保护范围为
+\(-50\le T\le250^\circ\mathrm{C}\)、\(0\le C\le10\)。
+验证结果表明正式计算未触及这些保护边界，因此保护操作不改变本题数值解。
+
+\section{问题一：常物性径向模型}
+
+\subsection{模型建立}
+
+问题一使用附录2给出的常物性参数
+\[
+\rho=820\,\mathrm{kg/m^3},\qquad
+c_p=2600\,\mathrm{J/(kg\cdot K)},\qquad
+k=0.36\,\mathrm{W/(m\cdot K)},
+\]
+以及 \(h=25\,\mathrm{W/(m^2\cdot K)}\)、
+\(h_m=8\times10^{-7}\,\mathrm{m/s}\)。水分扩散系数为
+\begin{equation}
+D(C)=7\times10^{-9}\exp\left(-\frac{0.89}{C}\right)
+\quad(\mathrm{m^2/s}). \label{eq:q1-D}
+\end{equation}
+故问题一的控制方程为
+\begin{align}
+\rho c_p\frac{\partial T}{\partial t}
+&=\frac{1}{r}\frac{\partial}{\partial r}
+\left(rk\frac{\partial T}{\partial r}\right), \label{eq:q1-T}\\
+\frac{\partial C}{\partial t}
+&=\frac{1}{r}\frac{\partial}{\partial r}
+\left(rD(C)\frac{\partial C}{\partial r}\right). \label{eq:q1-C}
+\end{align}
+问题一中温度场不依赖水分场，水分场只通过 \(D(C)\) 自身形成准线性扩散，
+不存在问题二至四中的物性双向反馈。
+
+\subsection{显式差分与控制体离散}
+
+取
+\[
+r_i=i\Delta r,\quad i=0,1,\ldots,N_r-1,\qquad
+\Delta r=0.001\,\mathrm{m},\quad N_r=21,
+\]
+\[
+t_n=n\Delta t,\qquad \Delta t=1\,\mathrm{s},\qquad
+0\le t_n\le1800\,\mathrm{s}.
+\]
+令
+\[
+\alpha=\frac{k}{\rho c_p},\qquad
+\lambda_i^+=1+\frac{\Delta r}{2r_i},\qquad
+\lambda_i^-=1-\frac{\Delta r}{2r_i}.
+\]
+对内部节点 \(i=1,\ldots,N_r-2\)，温度采用显式柱坐标差分：
+\begin{equation}
+T_i^{n+1}=T_i^n+\alpha\frac{\Delta t}{\Delta r^2}
+\left[\lambda_i^+T_{i+1}^n-2T_i^n+\lambda_i^-T_{i-1}^n\right].
+\label{eq:q1-T-inner}
+\end{equation}
+
+水分方程采用守恒型界面通量离散，而不是直接使用节点扩散系数。定义
+\begin{equation}
+D_{i+1/2}^n
+=D\left(\frac{C_i^n+C_{i+1}^n}{2}\right),\qquad
+D_{i-1/2}^n
+=D\left(\frac{C_{i-1}^n+C_i^n}{2}\right).
+\label{eq:q1-D-face}
+\end{equation}
+则内部节点更新为
+\begin{equation}
+\begin{aligned}
+C_i^{n+1}=C_i^n+\frac{\Delta t}{\Delta r^2}\big[&
+\lambda_i^+D_{i+1/2}^n(C_{i+1}^n-C_i^n)\\
+&+\lambda_i^-D_{i-1/2}^n(C_{i-1}^n-C_i^n)\big].
+\end{aligned}
+\label{eq:q1-C-inner}
+\end{equation}
+同一界面系数由相邻两个控制体共用，因而内部界面通量在全局求和时成对抵消。
+
+\subsubsection{中心控制体}
+
+由圆柱中心控制体的极限形式，程序采用
+\begin{align}
+T_0^{n+1}
+&=T_0^n+4\alpha\frac{\Delta t}{\Delta r^2}(T_1^n-T_0^n), \label{eq:q1-T-center}\\
+C_0^{n+1}
+&=C_0^n+4D_{1/2}^n\frac{\Delta t}{\Delta r^2}(C_1^n-C_0^n), \label{eq:q1-C-center}
+\end{align}
+其中 \(D_{1/2}^n=D((C_0^n+C_1^n)/2)\)。
+
+\subsubsection{表面半控制体}
+
+令 \(i_s=N_r-1\)，表面节点控制体的单位长度体积为
+\begin{equation}
+V_s=\pi\left[R_0^2-\left(R_0-\frac{\Delta r}{2}\right)^2\right]
+=\pi\Delta r^2\left(i_s-\frac14\right).
+\label{eq:q1-Vs}
+\end{equation}
+温度表面更新为
+\begin{equation}
+\begin{aligned}
+T_{i_s}^{n+1}=T_{i_s}^n+\Delta t\bigg[&
+\frac{2(i_s-\frac12)k}
+{\rho c_p(i_s-\frac14)\Delta r^2}
+(T_{i_s-1}^n-T_{i_s}^n)\\
+&+\frac{2i_sh}{\rho c_p(i_s-\frac14)\Delta r}
+(T_{\mathrm{air}}^{n+1}-T_{i_s}^n)\bigg].
+\end{aligned}
+\label{eq:q1-T-surface}
+\end{equation}
+令
+\[
+D_{s-1/2}^n=D\left(\frac{C_{i_s-1}^n+C_{i_s}^n}{2}\right),
+\]
+水分表面更新为
+\begin{equation}
+\begin{aligned}
+C_{i_s}^{n+1}=C_{i_s}^n+\Delta t\bigg[&
+\frac{2(i_s-\frac12)D_{s-1/2}^n}
+{(i_s-\frac14)\Delta r^2}
+(C_{i_s-1}^n-C_{i_s}^n)\\
+&+\frac{2i_sh_m}{(i_s-\frac14)\Delta r}
+(C_{\mathrm{air}}^{n+1}-C_{i_s}^n)\bigg].
+\end{aligned}
+\label{eq:q1-C-surface}
+\end{equation}
+这里环境边界使用下一时刻的插值值，而表面状态使用 \(n\) 时刻值，
+这正是 \texttt{q1\_2.py} 的显式实现。
+
+\subsection{稳定性与输出}
+
+本题参数下
+\[
+\frac{\alpha\Delta t}{\Delta r^2}=0.1689,\qquad
+4\frac{\alpha\Delta t}{\Delta r^2}=0.6754<1.
+\]
+初始含水率下中心水分更新系数约为 \(0.0198\)，满足显式推进的稳定性要求。
+程序 \texttt{q1\_2.py} 输出 \(0\)--\(1800\,\mathrm{s}\) 每隔 \(1\,\mathrm{s}\)、
+径向每隔 \(0.1\,\mathrm{cm}\) 的完整温度和水分结果。
+论文用表在
+\[
+t\in\{100,300,600,900,1200,1500,1800\}\,\mathrm{s}
+\]
+以及 \(r\in\{0,0.5,1,1.5,2\}\,\mathrm{cm}\) 处提取。
+
+\section{问题二：变物性两阶段模型}
+
+\subsection{模型建立}
+
+问题二将附录3的经验关系用于预热阶段和恒温阶段。与问题一相比，
+\(\rho,c_p,k\) 随局部水分浓度变化，扩散系数同时依赖水分浓度和温度：
+\begin{align}
+\rho(C)&=650+128C, \label{eq:q2-rho}\\
+c_p(C)&=1450+2736\frac{C}{C+1}, \label{eq:q2-cp}\\
+k(C)&=0.21+0.38\frac{C}{C+1}, \label{eq:q2-k}\\
+D(C,T)&=2.4\times10^{-3}\exp\left(-\frac{0.45}{C}\right)
+\exp\left(-\frac{3850}{T_K}\right). \label{eq:q2-D}
+\end{align}
+固定半径内的控制方程为
+\begin{align}
+\rho(C)c_p(C)\frac{\partial T}{\partial t}
+&=\frac{1}{r}\frac{\partial}{\partial r}
+\left(rk(C)\frac{\partial T}{\partial r}\right), \label{eq:q2-T}\\
+\frac{\partial C}{\partial t}
+&=\frac{1}{r}\frac{\partial}{\partial r}
+\left(rD(C,T)\frac{\partial C}{\partial r}\right). \label{eq:q2-C}
+\end{align}
+其耦合关系是
+\[
+C\longrightarrow \rho,c_p,k\longrightarrow T,\qquad
+(C,T)\longrightarrow D\longrightarrow C.
+\]
+需要强调的是，代码在两个阶段使用同一套附录3物性公式；
+两阶段的差异体现在外部边界和时间分段，而不是重新替换物性参数。
+
+\subsection{阶段切换与恒温段初值}
+
+预热计算由 \(T=28^\circ\mathrm{C},C=2.55\,\mathrm{kg/kg}\) 的均匀初态开始，
+使用绝对时间 \(0\)--\(5500\,\mathrm{s}\) 的附件1边界，得到 \(5500\,\mathrm{s}\)
+时刻的温度和水分剖面，并保存为 \texttt{output3.xlsx}。
+恒温段以该剖面为初值，再计算 \(10800\,\mathrm{s}\)，生成 \texttt{result2.xlsx}。
+因此，恒温段求解器内部的时间记为 \(\tau\)，但边界查询使用绝对时间
+\(t=t_s+\tau\)：
+\[
+T_{\mathrm{air}}^{n+1}=T_2(t_s+\tau_{n+1}),\qquad
+C_{\mathrm{air}}^{n+1}=C_2(t_s+\tau_{n+1}).
+\]
+结果文件中的时间列为 \(\tau=0,\ldots,10800\,\mathrm{s}\)。
+
+\subsection{系数滞后的后向 Euler 半隐式格式}
+
+空间仍取 \(r_i=i\Delta r\)，\(\Delta r=0.001\,\mathrm{m}\)，
+时间步长为 \(\Delta t=1\,\mathrm{s}\)。每一步先由旧时刻的
+\(C^n,T^n\) 计算物性和界面系数，再对新时刻未知量组装三对角方程；
+因此该方法是后向 Euler 时间离散、系数滞后的半隐式方法。
+
+在界面处取算术平均：
+\begin{align}
+k_{i+1/2}^n
+&=k\left(\frac{C_i^n+C_{i+1}^n}{2}\right),\\
+D_{i+1/2}^n
+&=D\left(\frac{C_i^n+C_{i+1}^n}{2},
+\frac{T_i^n+T_{i+1}^n}{2}\right).
+\end{align}
+对 \(i=1,\ldots,N_r-2\)，令
+\[
+a_i^T=\frac{\Delta t}{\rho(C_i^n)c_p(C_i^n)\Delta r^2},\qquad
+\lambda_i^\pm=1\pm\frac{\Delta r}{2r_i},
+\]
+温度三对角方程为
+\begin{equation}
+\begin{aligned}
+-a_i^T\lambda_i^-k_{i-1/2}^nT_{i-1}^{n+1}
+&+\left[1+a_i^T\left(\lambda_i^-k_{i-1/2}^n+
+\lambda_i^+k_{i+1/2}^n\right)\right]T_i^{n+1}\\
+&-a_i^T\lambda_i^+k_{i+1/2}^nT_{i+1}^{n+1}=T_i^n.
+\end{aligned}
+\label{eq:q2-T-inner}
+\end{equation}
+
+水分内部方程具有相同的守恒结构。令
+\[
+a^C=\frac{\Delta t}{\Delta r^2},
+\]
+则
+\begin{equation}
+\begin{aligned}
+-a^C\lambda_i^-D_{i-1/2}^nC_{i-1}^{n+1}
+&+\left[1+a^C\left(\lambda_i^-D_{i-1/2}^n+
+\lambda_i^+D_{i+1/2}^n\right)\right]C_i^{n+1}\\
+&-a^C\lambda_i^+D_{i+1/2}^nC_{i+1}^{n+1}=C_i^n.
+\end{aligned}
+\label{eq:q2-C-inner}
+\end{equation}
+
+\subsubsection{中心控制体的隐式方程}
+
+令
+\[
+k_{1/2}^n=k\left(\frac{C_0^n+C_1^n}{2}\right),\qquad
+\beta_T=\frac{\Delta t}{\rho(C_0^n)c_p(C_0^n)\Delta r^2},
+\]
+则中心温度满足
+\begin{equation}
+\left(1+4\beta_Tk_{1/2}^n\right)T_0^{n+1}
+-4\beta_Tk_{1/2}^nT_1^{n+1}=T_0^n.
+\label{eq:q2-T-center}
+\end{equation}
+相应地，令
+\[
+D_{1/2}^n=D\left(\frac{C_0^n+C_1^n}{2},
+\frac{T_0^n+T_1^n}{2}\right),
+\]
+中心水分方程为
+\begin{equation}
+\left(1+4a^CD_{1/2}^n\right)C_0^{n+1}
+-4a^CD_{1/2}^nC_1^{n+1}=C_0^n.
+\label{eq:q2-C-center}
+\end{equation}
+
+\subsubsection{表面控制体的隐式方程}
+
+令 \(i_s=N_r-1\)、\(V_f=i_s-\tfrac14\)，并取
+\[
+k_s^n=k\left(\frac{C_{i_s-1}^n+C_{i_s}^n}{2}\right),
+\]
+\[
+\beta_s^T=\frac{\Delta t}{\rho(C_{i_s}^n)c_p(C_{i_s}^n)V_f\Delta r^2},
+\quad
+A_T=2\left(i_s-\frac12\right)k_s^n,\quad
+B_T=2i_sh\Delta r.
+\]
+则表面温度方程为
+\begin{equation}
+-\beta_s^TA_TT_{i_s-1}^{n+1}
++\left[1+\beta_s^T(A_T+B_T)\right]T_{i_s}^{n+1}
+=T_{i_s}^n+\beta_s^TB_TT_{\mathrm{air}}^{n+1}.
+\label{eq:q2-T-surface}
+\end{equation}
+
+令
+\[
+D_s^n=D\left(\frac{C_{i_s-1}^n+C_{i_s}^n}{2},
+\frac{T_{i_s-1}^n+T_{i_s}^n}{2}\right),
+\]
+\[
+G_1=\frac{2\Delta t(i_s-\frac12)D_s^n}{V_f\Delta r^2},
+\qquad
+G_2=\frac{2\Delta t i_sh_m}{V_f\Delta r}.
+\]
+表面水分方程为
+\begin{equation}
+-G_1C_{i_s-1}^{n+1}
++(1+G_1+G_2)C_{i_s}^{n+1}
+=C_{i_s}^n+G_2C_{\mathrm{air}}^{n+1}.
+\label{eq:q2-C-surface}
+\end{equation}
+程序先求解温度三对角方程，再使用同一旧时刻的
+\(D_{i+1/2}^n\) 求解水分三对角方程，不在一个时间步内进行非线性迭代；
+线性方程组均使用追赶法求解。
+
+\subsection{问题二输出}
+
+程序 \texttt{q2\_2.py} 生成 \(5500\,\mathrm{s}\) 初始剖面，
+\texttt{q2\_3.py} 生成恒温段完整结果。完整表按 \(1\,\mathrm{s}\)、
+\(0.1\,\mathrm{cm}\) 输出；摘要表按 \(0.5\,\mathrm{h}\)、
+\(0.5\,\mathrm{cm}\) 提取。
+
+\section{问题三：全过程固定半径模型}
+
+\subsection{模型建立}
+
+问题三沿用问题二的固定半径和附录3变物性关系：
+\[
+R(t)\equiv R_0=0.02\,\mathrm{m}.
+\]
+不同之处在于问题三不把 \(5500\,\mathrm{s}\) 之后的阶段作为新的初值问题，
+而是从 \(t=0\) 的原始均匀状态直接计算至烘干结束。因此边界使用
+\[
+(T_{\mathrm{air}}(t),C_{\mathrm{air}}(t))=
+\begin{cases}
+(T_1(t),C_1(t)),&0\le t\le5500\,\mathrm{s},\\
+(T_2(t),C_2(t)),&t>5500\,\mathrm{s}.
+\end{cases}
+\]
+控制方程、中心条件、表面 Robin 条件均为式
+\eqref{eq:q2-T}--\eqref{eq:q2-C}、
+\eqref{eq:center-bc} 和
+\eqref{eq:surface-T}--\eqref{eq:surface-C}。
+
+\subsection{全过程求解}
+
+问题三采用问题二的系数滞后后向 Euler 半隐式控制体格式，
+但取 \(\Delta t=60\,\mathrm{s}\)、\(\Delta r=0.001\,\mathrm{m}\)，
+最大绝对计算时间为
+\[
+t_{\max}=259200\,\mathrm{s}=72\,\mathrm{h}.
+\]
+每一步使用绝对时间查询拼接后的环境边界，初值为
+\[
+T_i^0=28^\circ\mathrm{C},\qquad C_i^0=2.55\,\mathrm{kg/kg}.
+\]
+
+\subsection{烘干结束判据}
+
+题意要求药材内部各位置均达到水分限值，因此定义
+\begin{equation}
+C_{\max}(t_n)=\max_{0\le i\le N_r-1}C_i^n.
+\label{eq:q3-Cmax}
+\end{equation}
+取首次满足 \(C_{\max}(t_j)\le0.15\) 的网格时刻为阈值跨越点。
+若 \(C_{\max}(t_{j-1})>0.15\)，则在线性插值下
+\begin{equation}
+t_d=t_{j-1}+
+\frac{0.15-C_{\max}(t_{j-1})}
+{C_{\max}(t_j)-C_{\max}(t_{j-1})}
+(t_j-t_{j-1}).
+\label{eq:q3-dry-time}
+\end{equation}
+程序 \texttt{q3.py} 按 \(60\,\mathrm{s}\) 保存全过程结果，并在末尾追加
+\(t_d\) 对应的线性插值行；摘要表按每 \(6\,\mathrm{h}\) 及结束时刻提取。
+本次计算首次达到阈值的时刻为
+\[
+t_d=210634.7398\,\mathrm{s}=58.50965\,\mathrm{h}.
+\]
+
+\section{问题四：变半径材料坐标模型}
+
+\subsection{移动边界与材料坐标}
+
+问题四使用附件2给出的半径数据 \(R(t)\)。假设药材沿径向均匀收缩，
+定义材料坐标
+\begin{equation}
+\xi=\frac{r}{R(t)},\qquad 0\le\xi\le1. \label{eq:q4-xi}
+\end{equation}
+固定 \(\xi\) 表示随骨架运动的同一材料位置，因此不再另加一个网格对流项。
+对任意场 \(u(r,t)=\widetilde u(\xi,t)\)，有
+\begin{equation}
+\left.\frac{\partial u}{\partial r}\right|_t
+=\frac{1}{R(t)}\frac{\partial\widetilde u}{\partial\xi}. \label{eq:q4-chain}
+\end{equation}
+在这一材料坐标描述下，沿材料点的时间变化率就是
+\(\partial\widetilde u/\partial t|_\xi\)。
+
+附件2半径数据先由 PCHIP 插值到计算网格
+\(t_n=n\Delta t\)，得到 \(R_n=R(t_n)\)。
+代码再作累计最小值修正，仅消除浮点误差造成的局部极小上升，
+从而保证 \(R_{n+1}\le R_n\)。
+
+\subsection{变半径控制方程与边界条件}
+
+问题四使用附录4物性关系：
+\begin{align}
+\rho(C)&=760+90C, \label{eq:q4-rho}\\
+c_p(C)&=1850+2150\frac{C}{C+1}, \label{eq:q4-cp}\\
+k(C)&=0.12+0.20\frac{C}{C+1}, \label{eq:q4-k}\\
+D(C,T)&=4.2\times10^{-4}\exp\left(-\frac{0.30}{C}\right)
+\exp\left(-\frac{3850}{T_K}\right). \label{eq:q4-D}
+\end{align}
+由式 \eqref{eq:q4-chain}，固定材料坐标上的方程为
+\begin{align}
+\rho(\widetilde C)c_p(\widetilde C)
+\frac{\partial\widetilde T}{\partial t}
+&=\frac{1}{R(t)^2\xi}\frac{\partial}{\partial\xi}
+\left[\xi k(\widetilde C)
+\frac{\partial\widetilde T}{\partial\xi}\right], \label{eq:q4-T}\\
+\frac{\partial\widetilde C}{\partial t}
+&=\frac{1}{R(t)^2\xi}\frac{\partial}{\partial\xi}
+\left[\xi D(\widetilde C,\widetilde T)
+\frac{\partial\widetilde C}{\partial\xi}\right]. \label{eq:q4-C}
+\end{align}
+初值为
+\[
+\widetilde T(\xi,0)=28^\circ\mathrm{C},\qquad
+\widetilde C(\xi,0)=2.55\,\mathrm{kg/kg}.
+\]
+中心条件为
+\[
+\widetilde T_\xi(0,t)=0,\qquad
+\widetilde C_\xi(0,t)=0.
+\]
+在当前表面 \(\xi=1\) 处，Robin 条件变为
+\begin{align}
+-\frac{k(\widetilde C_s)}{R(t)}
+\widetilde T_\xi(1,t)
+&=h[\widetilde T_s-T_{\mathrm{air}}(t)], \label{eq:q4-bc-T}\\
+-\frac{D(\widetilde C_s,\widetilde T_s)}{R(t)}
+\widetilde C_\xi(1,t)
+&=h_m[\widetilde C_s-C_{\mathrm{air}}(t)]. \label{eq:q4-bc-C}
+\end{align}
+
+\subsection{固定材料坐标控制体离散}
+
+取
+\[
+\xi_i=i\Delta\xi,\qquad
+\Delta\xi=0.05,\qquad
+\Delta t=60\,\mathrm{s},\qquad
+N_r=21.
+\]
+单位化后的控制体权重为
+\begin{align}
+w_0&=\left(\frac{\Delta\xi}{2}\right)^2,\\
+w_i&=2\xi_i\Delta\xi,\qquad 1\le i\le N_r-2,\\
+w_{N_r-1}&=1-\left(1-\frac{\Delta\xi}{2}\right)^2.
+\end{align}
+这里 \(w_i\) 是实际控制体面积除以 \(\pi R^2\) 后的无量纲权重。
+
+为统一表示温度和水分，令 \(u\) 分别取
+\(\widetilde T\) 或 \(\widetilde C\)，
+\(H_i^n\) 分别取 \(\rho(C_i^n)c_p(C_i^n)\) 或 \(1\)，
+\(q_{i+1/2}^n\) 分别取 \(k\) 或 \(D\)。界面位置和界面系数为
+\[
+\xi_{i+1/2}=\left(i+\frac12\right)\Delta\xi,
+\]
+\begin{equation}
+q_{i+1/2}^n=
+\begin{cases}
+k\left(\dfrac{C_i^n+C_{i+1}^n}{2}\right),&u=\widetilde T,\\[7pt]
+D\left(\dfrac{C_i^n+C_{i+1}^n}{2},
+\dfrac{T_i^n+T_{i+1}^n}{2}\right),&u=\widetilde C.
+\end{cases}
+\label{eq:q4-qface}
+\end{equation}
+每一步使用 \(R_{n+1}\) 进入尺度因子和表面系数。对含有左右界面的控制体，
+后向 Euler 离散为
+\begin{equation}
+\frac{H_i^nw_i}{\Delta t}(u_i^{n+1}-u_i^n)
+=\frac{2}{R_{n+1}^2}
+\left[
+\xi_{i+1/2}q_{i+1/2}^n
+\frac{u_{i+1}^{n+1}-u_i^{n+1}}{\Delta\xi}
+-\xi_{i-1/2}q_{i-1/2}^n
+\frac{u_i^{n+1}-u_{i-1}^{n+1}}{\Delta\xi}
+\right].
+\label{eq:q4-cv-inner}
+\end{equation}
+中心控制体没有左界面通量，表面控制体没有右界面通量。
+表面控制体还增加对流项：
+\begin{equation}
+\frac{H_s^nw_s}{\Delta t}(u_s^{n+1}-u_s^n)
+=-\frac{2}{R_{n+1}}\,
+\xi_{s-1/2}q_{s-1/2}^n
+\frac{u_s^{n+1}-u_{s-1}^{n+1}}{\Delta\xi}
++\frac{2h_u}{R_{n+1}}
+(u_{\mathrm{air}}^{n+1}-u_s^{n+1}),
+\label{eq:q4-cv-surface}
+\end{equation}
+其中温度方程取
+\((h_u,u_{\mathrm{air}})=(h,T_{\mathrm{air}})\)，水分方程取
+\((h_u,u_{\mathrm{air}})=(h_m,C_{\mathrm{air}})\)。
+式 \eqref{eq:q4-cv-inner}--\eqref{eq:q4-cv-surface} 逐控制体组装为三对角方程组，
+并用追赶法求解。
+
+\subsection{问题四求解顺序与输出}
+
+每个 \(60\,\mathrm{s}\) 时间步的计算顺序为：
+\begin{enumerate}[label=\arabic*.,leftmargin=3em]
+\item 读取 \(R_{n+1}\) 以及绝对时间 \(t_{n+1}\) 的环境边界；
+\item 用旧时刻 \(C^n,T^n\) 计算 \(H_i^n\)、\(k_{i+1/2}^n\) 和 \(D_{i+1/2}^n\)；
+\item 组装并求解温度三对角方程；
+\item 使用同一组旧时刻扩散系数组装并求解水分三对角方程；
+\item 检查有限值和物理范围，计算 \(C_{\max}(t_n)\)，并判断是否达到 \(0.15\)。
+\end{enumerate}
+程序 \texttt{q4.py} 使用
+\[
+C_{\max}(t_n)=\max_i C_i^n
+\]
+作为烘干结束判据，并按相邻 \(60\,\mathrm{s}\) 网格点线性插值结束时间。
+输出时将材料坐标映射为
+\[
+r_i(t_n)=\xi_iR(t_n).
+\]
+当目标物理位置超过当前半径时，表格留空；同时保存无量纲网格和半径插值表，
+避免把收缩后的物理位置误读为固定网格位置。
+按全域水分阈值判定，本问得到
+\[
+t_d=184815.7394\,\mathrm{s}=51.33771\,\mathrm{h},
+\qquad
+R(0)=2.000\,\mathrm{cm},\quad R(t_d)=1.198\,\mathrm{cm}.
+\]
+
+\section{四问求解流程汇总}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\textwidth}
+                  >{\raggedright\arraybackslash}p{0.28\textwidth}
+                  >{\raggedright\arraybackslash}p{0.48\textwidth}}
+\toprule
+问题 & 模型与阶段 & 数值求解及输出 \\
+\midrule
+\endfirsthead
+\toprule
+问题 & 模型与阶段 & 数值求解及输出 \\
+\midrule
+\endhead
+问题一 &
+常物性固定半径；\(D=D(C)\)；只计算预热平衡段 &
+\(\Delta r=1\,\mathrm{mm}\)、\(\Delta t=1\,\mathrm{s}\)；
+温度显式差分，水分守恒型显式界面通量；输出 \(0\)--\(1800\,\mathrm{s}\)。\\
+\midrule
+问题二 &
+固定半径附录3变物性；预热段 \(0\)--\(5500\,\mathrm{s}\)，
+恒温段从 \(5500\,\mathrm{s}\) 接续 &
+系数滞后的后向 Euler 半隐式控制体格式；
+先温度后水分，追赶法；恒温段输出 \(10800\,\mathrm{s}\)。\\
+\midrule
+问题三 &
+问题二模型的全过程版本；固定半径；两阶段边界拼接 &
+\(\Delta t=60\,\mathrm{s}\) 推进至 \(259200\,\mathrm{s}\) 或阈值；
+以全域 \(C_{\max}\le0.15\) 判定结束。\\
+\midrule
+问题四 &
+附录4变物性；附件2变半径；材料坐标 \(\xi=r/R(t)\) &
+\(\Delta\xi=0.05\)、\(\Delta t=60\,\mathrm{s}\)；
+后向 Euler 隐式控制体；半径通过 \(R_{n+1}^{-2}\) 和
+\(R_{n+1}^{-1}\) 进入；输出物理位置和无量纲位置。\\
+\bottomrule
+\end{longtable}
+
+\subsection{代码对应关系}
+
+\begin{table}[H]
+\centering
+\caption{模型章节与程序文件对应关系}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.25\textwidth}
+                >{\raggedright\arraybackslash}p{0.62\textwidth}}
+\toprule
+程序 & 功能 \\
+\midrule
+\texttt{q1\_1.py} & 附件1环境数据的 PCHIP 插值，生成 \texttt{output1.xlsx}。\\
+\texttt{q1\_2.py} & 问题一显式温度--水分求解和结果输出。\\
+\texttt{q1\_3.py} & 问题一独立重算、时间/空间收敛与守恒检查。\\
+\texttt{q2\_1.py} & 稳定阶段识别，生成恒温边界 \texttt{output2.xlsx}。\\
+\texttt{q2\_2.py} & 附录3模型推进至 \(5500\,\mathrm{s}\)，生成 \texttt{output3.xlsx}。\\
+\texttt{q2\_3.py} & 恒温段半隐式求解和 \texttt{result2.xlsx} 输出。\\
+\texttt{q3.py} & 全过程半隐式求解、阈值插值和 \texttt{result3.xlsx} 输出。\\
+\texttt{q4.py} & 半径 PCHIP 插值、材料坐标隐式求解和 \texttt{result4.xlsx} 输出。\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
