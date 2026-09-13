@@ -75,7 +75,7 @@
 
 
 % ====== 论文信息 ======
-\title{全国大学生数学建模竞赛论文模板}
+\title{中药材热风干燥过程的传热传质建模与数值分析}
 \tihao{}
 \baominghao{}
 \schoolname{}
@@ -95,21 +95,18 @@
 
 \maketitle
 \begin{abstract}
-摘要
+针对圆柱形中药材热风干燥过程中的温度与水分浓度演化问题，本文将药材等效为一维径向连续介质，建立传热--传质耦合偏微分方程模型，
+并采用守恒型有限体积/有限差分格式进行数值求解。环境边界数据采用 PCHIP 保形插值，变物性问题采用系数滞后的后向 Euler 半隐式格式。
 
-\textbf{对于问题一,}
+对于问题一，常物性显式模型给出 \(0\sim1800\,\mathrm{s}\) 内的温度场和水分场。1800 s 时中心与表面温度分别为 \(33.5798^\circ\mathrm{C}\) 和 \(36.7905^\circ\mathrm{C}\)，表面水分浓度由 \(2.2875\) 降至 \(1.5125\,\mathrm{kg/kg}\)。
 
-\textbf{对于问题二,}
+对于问题二，考虑温度和水分浓度引起的物性变化，并将预热段与恒温段衔接。恒温 3 h 后，各径向位置温度均接近 \(50^\circ\mathrm{C}\)，中心和表面水分浓度分别为 \(1.3177\) 和 \(0.7281\,\mathrm{kg/kg}\)。
 
-\textbf{对于问题三,}
+对于问题三，采用全域最大水分浓度作为干燥判据，首次满足 \(C_{\max}\le0.15\,\mathrm{kg/kg}\) 的时间为 \(58.50965\,\mathrm{h}\)。对于问题四，引入随时间收缩的半径和材料坐标，得到干燥时间 \(51.33771\,\mathrm{h}\)，半径由 \(2.000\,\mathrm{cm}\) 收缩至 \(1.198\,\mathrm{cm}\)，相较固定半径模型缩短约 \(12.3\%\)。
 
-\textbf{对于问题四,}
+收敛性、独立重算和守恒性验证表明，所建模型在题目给定参数范围内具有稳定、守恒且可复现的数值表现。
 
-最后，
-
-
-
-\keywords{关键词\quad  关键词\quad  关键词\quad  关键词 \quad 关键词}
+\keywords{中药材干燥\quad 传热传质\quad 有限体积法\quad 变物性\quad 移动边界}
 \end{abstract}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
@@ -538,31 +535,24 @@ C_{i_s}^{n+1} = C_{i_s}^n &+ \Delta t \Bigg[ \frac{2(i_s - \frac{1}{2}) D_{s-1/2
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{pic/q1_1_水分时间演化图.png}
-    \caption{问题一水分浓度随时间的变化}
-    \label{fig:q1_moisture_time}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{pic/q1_2_温度时间演化图.png}
-    \caption{问题一温度随时间的变化}
-    \label{fig:q1_temperature_time}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{pic/q1_3_温度和水分热力图.png}
-    \caption{问题一温度和水分浓度热力图}
-    \label{fig:q1_heatmap}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{pic/q1_4_问题一径向温度和含水率分布.png}
-    \caption{问题一径向温度和含水率分布}
+    \includegraphics[width=1\linewidth]{pic/q1_综合图.png}
+    \caption{问题一典型时刻的径向温度和水分浓度分布}
     \label{fig:q1_radial}
 \end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{pic/q1_三维图.png}
+    \caption{问题一温度和水分浓度三维时空分布}
+    \label{fig:q1_3d}
+\end{figure}
+
+由表 1 和表 2 可见，问题一的温度和水分场均呈现明显的径向梯度。1800 s 时，中心温度为
+\(33.5798^\circ\mathrm{C}\)，表面温度为 \(36.7905^\circ\mathrm{C}\)，表面比中心高
+\(3.2107^\circ\mathrm{C}\)；同一时刻中心水分浓度仍为 \(2.5500\,\mathrm{kg/kg}\) 左右，
+而表面已降至 \(1.5125\,\mathrm{kg/kg}\)。这说明热量和水分均由表面向中心逐步传递，表层首先升温、脱水，
+中心响应存在明显滞后。图 \ref{fig:q1_radial} 的四个典型时刻进一步表明，随着时间推进，温度曲线整体上移，
+水分曲线整体下移，但表面附近的梯度始终最大，因而预热阶段的控制环节主要是内部传热传质而不是边界输入。
 
 结果表明，总能量变化曲线与边界热流累积曲线在整个模拟时段内几乎完全重合；总水分变化曲线与边界质流累积曲线同样几乎完全重合。两项守恒误差均远小于 5\% 的工程容许阈值，充分证明了本文所建立的显式有限差分算法具有良好的守恒性与数值稳定性，能够为后续中药材烘干过程的温度场与水分场求解提供可靠的数值保障。
 
@@ -790,34 +780,40 @@ G_1 = \frac{2\Delta t(i_s - 1/2)D_s^n}{V_f \Delta r^2}, \qquad G_2 = \frac{2\Del
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{pic/q2_水分时间演化图.png}
-    \caption{问题二水分浓度随时间的变化}
-    \label{fig:q2_moisture_time}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{pic/q2_温度和水分热力图.png}
-    \caption{问题二温度和水分浓度热力图}
-    \label{fig:q2_heatmap}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{pic/q2_温度时间演化图.png}
-    \caption{问题二温度随时间的变化}
-    \label{fig:q2_temperature_time}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \IfFileExists{pic/q2_问题二的时空演化图.png}{%
-      \includegraphics[width=0.5\linewidth]{pic/q2_问题二的时空演化图.png}%
-    }{\PackageWarning{paper}{Missing figure pic/q2_问题二的时空演化图.png; skipped}}
-    \caption{问题二的时空演化图}
+    \includegraphics[width=1\linewidth]{pic/q2_综合图.png}
+    \caption{问题二恒温阶段温度和水分浓度时空分布}
     \label{fig:q2_spatiotemporal}
 \end{figure}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{pic/q2_三维图.png}
+    \caption{问题二恒温阶段温度和水分浓度三维时空分布}
+    \label{fig:q2_3d}
+\end{figure}
+
+表 3 显示恒温阶段具有快速的热平衡特征：0.5 h 时中心与表面温度已分别达到
+\(48.5403^\circ\mathrm{C}\) 和 \(49.0497^\circ\mathrm{C}\)，3 h 时五个径向位置均收敛到
+约 \(50^\circ\mathrm{C}\)，最大径向温差仅约 \(0.0008^\circ\mathrm{C}\)。相比之下，水分场的弛豫明显较慢，
+表 4 中心水分浓度由 \(2.1583\) 降至 \(1.3177\,\mathrm{kg/kg}\)，表面由 \(1.2243\) 降至
+\(0.7281\,\mathrm{kg/kg}\)，始终保持“表面低、中心高”的梯度。图 \ref{fig:q2_spatiotemporal}
+显示温度热力图在约 0.5 h 后基本均匀，而水分热力图仍沿径向和时间方向持续变化，说明恒温段的主要
+限速因素由传热转变为内部水分扩散和表面传质。
+
+图 \ref{fig:q2_spatiotemporal} 还表明，不同径向位置的温度曲线很快汇合，而水分场的径向分离
+在整个 3 h 内仍然明显；因此，将两阶段边界和 5500 s 时刻剖面连续衔接，
+是避免重新引入均匀初值误差的关键。
+
+作为阶段切换的辅助检验，图 \ref{fig:stability_time} 给出了预热边界的稳定时间判定。温度在约
+\(5439\,\mathrm{s}\) 后进入稳定区间，水分浓度同步趋于平台，因此取 \(5500\,\mathrm{s}\) 作为两阶段
+切换点既保留了预热末期的空间剖面，又避免将尚未稳定的边界波动带入恒温段。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/验证_稳定时间.png}
+    \caption{预热阶段温度与水分浓度的稳定时间判定}
+    \label{fig:stability_time}
+\end{figure}
 
 
 
@@ -913,48 +909,29 @@ t_d = 210634.7398\,\text{s} = 58.50965\,\text{h}.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{pic/q3_水分时间演化图.png}
-    \caption{问题三水分浓度随时间的变化}
-    \label{fig:q3_moisture_time}
-\end{figure}
-
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{pic/q3_水分热力图.png}
-    \caption{问题三水分浓度热力图}
-    \label{fig:q3_heatmap}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{pic/q3_水分热力图.png}
-    \caption{问题三水分浓度热力图（重复绘制）}
-    \label{fig:q3_heatmap_duplicate}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \IfFileExists{pic/q3_达到干燥标准前后的径向含水率.png}{%
-      \includegraphics[width=0.5\linewidth]{pic/q3_达到干燥标准前后的径向含水率.png}%
-    }{\PackageWarning{paper}{Missing figure pic/q3_达到干燥标准前后的径向含水率.png; skipped}}
-    \caption{问题三达到干燥标准前后的径向含水率}
+    \includegraphics[width=1\linewidth]{pic/q3_综合图.png}
+    \caption{问题三干燥过程与阈值判定}
     \label{fig:q3_radial}
 \end{figure}
 
-
-
-\begin{figure}
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.5\linewidth]{pic/q3_阈值判定图.png}
-    \caption{问题三干燥阈值判定}
-    \label{fig:q3_threshold}
+    \includegraphics[width=0.92\linewidth]{pic/q3_三维图.png}
+    \caption{问题三水分浓度三维时空分布}
+    \label{fig:q3_3d}
 \end{figure}
-
 
 
 
 按照上述模型与判据，程序输出 \(0 \sim t_d\) 内每隔 \(60\,\text{s}\)、径向每隔 \(0.1\,\text{cm}\) 的完整水分浓度结果，并按表 5 的格式给出每隔 \(6\,\text{h}\)、距药材中心每隔 \(0.5\,\text{cm}\) 的水分浓度。由计算结果可知，药材各处水分浓度均低于 \(0.15\,\text{kg/kg}\) 所需的时间约为 \(58.51\,\text{h}\)，即约 \(2.44\) 天，符合题目中烘干过程持续 \(2\sim3\) 天的实际情形。
+
+表 5 和图 \ref{fig:q3_radial} 共同揭示了干燥结束由中心区域控制。18 h 时中心水分浓度仍为
+\(0.2992\,\mathrm{kg/kg}\)，而表面已降至 \(0.0843\,\mathrm{kg/kg}\)；在结束时刻，中心恰好达到
+\(0.1500\,\mathrm{kg/kg}\)，其余位置均低于该阈值，表面仅为 \(0.0525\,\mathrm{kg/kg}\)。因此，
+以全域最大值 \(C_{\max}(t)\) 判定比采用平均水分浓度更严格，也能避免中心残留水分未达标的情况。
+
+图 \ref{fig:q3_radial} 中的阈值交点位于 \(58.51\,\mathrm{h}\) 附近，综合图显示水分由表面向中心逐渐迁移，
+后期等值区间变得平缓，表明过程进入扩散控制的减速阶段。
 
 
 
@@ -1133,6 +1110,26 @@ D\left(\frac{C_i^n + C_{i+1}^n}{2}, \frac{T_i^n + T_{i+1}^n}{2}\right), & u = \t
 
 
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{pic/q4_综合图.png}
+    \caption{问题四变半径烘干过程与全域阈值判定}
+    \label{fig:q4_results}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\linewidth]{pic/q4_三维图.png}
+    \caption{问题四变半径水分浓度三维分布}
+    \label{fig:q4_3d}
+\end{figure}
+
+表 6 与图 \ref{fig:q4_results} 表明，半径收缩和水分迁移具有明显的阶段性。前 12 h 内半径由
+\(2.000\,\mathrm{cm}\) 快速降至约 \(1.25\,\mathrm{cm}\) 附近，之后逐渐趋于平缓；与此同时，
+表面水分浓度先快速下降，中心水分浓度则保持为全域最大值并决定最终停机时刻。6 h 时中心与表面
+水分浓度分别为 \(1.7182\) 和 \(0.4205\,\mathrm{kg/kg}\)，18 h 时已降至 \(0.4088\) 和
+\(0.0891\,\mathrm{kg/kg}\)。
+
 按全域水分阈值判定，本问得到烘干结束时间
 \begin{equation}
 t_d = 184815.7394\,\text{s} = 51.33771\,\text{h},
@@ -1144,12 +1141,28 @@ R(t_d) = 1.198\,\text{cm}.
 
 与问题三在固定半径假设下得到的 \(58.51\,\text{h}\) 相比，考虑尺寸收缩后所需的烘干时间缩短至约 \(51.34\,\text{h}\)，减小了约 \(12\%\)。这一差异表明，药材收缩会缩短水分迁移路径并增大表面对流传质面积，从而加速干燥过程。因此，在实际烘干工艺中若忽略尺寸变化，会高估所需烘干时长，影响生产效率与能耗评估的准确性。最终结果按照表 6 的格式，给出每隔 \(6\,\text{h}\)、距药材中心每隔 \(0.5\,\text{cm}\) 的水分浓度，以及药材内部水分浓度每隔 \(60\,\text{s}\)、距药材中心每隔 \(0.1\,\text{cm}\) 的完整结果。
 
+由图中终点标记可见，结束时半径约为 \(1.198\,\text{cm}\)，半径减少约 \(40.1\%\)，对应截面积减少约
+\(64.0\%\)。收缩使有效扩散路径缩短，因而固定半径假设得到的 \(58.51\,\text{h}\) 是偏保守的估计；
+引入移动边界后得到的 \(51.34\,\text{h}\) 更能反映题目给定的收缩过程。
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{模型的分析与检验}
 
 \subsection{结果检验}
+
+结果检验从三方面进行：首先用独立程序重算关键时刻并与输出表逐项比较；其次改变时间步长和空间步长，
+考察解的收敛性；最后对温度能量和水分质量进行全局守恒核对。图 \ref{fig:cross_check} 显示，问题一、
+问题二的独立重算误差均接近机器精度，5500 s 断点的温度和水分最大绝对误差分别为
+\(4.42\times10^{-5}\) 和 \(4.88\times10^{-5}\)，说明阶段切换剖面被正确传递到恒温段。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{pic/验证_独立重算交叉校验.png}
+    \caption{独立重算与 5500 s 断点交叉校验}
+    \label{fig:cross_check}
+\end{figure}
 
 \subsection{数值算法的守恒性验证}
 
@@ -1204,6 +1217,16 @@ Q_{\text{flux}}^n = \sum_{m=0}^{n-1} h \cdot 2\pi R \left( T_\infty^m - T_{N_r-1
 
 在离散域中，离散总水分计算式为 \(M^n = \sum_{i=0}^{N_r-1} C_i^n V_i\)，边界质流累积为 \(M_{\text{flux}}^n = \sum_{m=0}^{n-1} m^m \Delta t\)，其中表面质流 \(m^n = h_m \cdot 2\pi R \left( C_\infty^n - C_{N_r-1}^n \right)\)。同理可定义水分守恒相对误差 \(\varepsilon_M^n\)。
 
+图 \ref{fig:balance_check} 给出了三个问题的储量变化与边界通量积分对照。两条曲线在各个时刻基本重合，
+最终残差分别处于 \(10^{-14}\sim10^{-16}\) 数量级，说明守恒型界面通量离散没有引入可见的内部源汇。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{pic/验证_守恒对照_三问.png}
+    \caption{问题一至问题三的储量变化与边界通量积分对照}
+    \label{fig:balance_check}
+\end{figure}
+
 \subsubsection{变系数扩散的守恒性说明}
 
 水分方程求解的关键难点在于 \(D(C)\) 是变量。若直接将 \(D\) 取节点值 \(D(C_i)\) 进行常规差分，则会漏掉 \(\partial D / \partial r \cdot \partial C / \partial r\) 项，导致相邻控制体界面通量不相等，从而破坏总水分守恒。
@@ -1218,7 +1241,35 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 \end{equation}
 此时，相邻控制体界面通量大小相等、方向相反，求和时自动抵消，从而在数学上保证了总水分严格守恒。
 
+\subsubsection{守恒性检验结果}
 
+
+
+为检验离散参数的选择，图 \ref{fig:time_convergence} 和图 \ref{fig:space_convergence} 分别给出三问的时间步、
+空间步交叉收敛结果。随着步长减小，温度、水分浓度或全域最大水分浓度的最大绝对误差均单调下降；问题四的
+移动边界收敛结果见图 \ref{fig:q4_convergence}，在 \(\Delta t=60\,\mathrm{s}\)、\(\Delta\xi=0.05\) 时误差
+仍处于 \(10^{-2}\) 量级以下，满足本文结果精度要求。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{pic/验证_时间步收敛_三问.png}
+    \caption{问题一至问题三的时间步收敛交叉验证}
+    \label{fig:time_convergence}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{pic/验证_空间步收敛_三问.png}
+    \caption{问题一至问题三的空间步收敛交叉验证}
+    \label{fig:space_convergence}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{pic/验证_问题四收敛.png}
+    \caption{问题四移动边界模型的时间步和空间步收敛}
+    \label{fig:q4_convergence}
+\end{figure}
 
 \subsection{误差分析}
 
@@ -1245,20 +1296,36 @@ F_{i+1/2} = D_{i+1/2} \frac{C_{i+1} - C_i}{\Delta r}
 
 \section{模型的评价}
 
+本文针对中药材热风烘干问题，建立了圆柱形药材的一维径向传热传质耦合模型，分别采用显式有限差分法（问题一）和系数滞后的后向 Euler 
+半隐式格式（问题二至四）进行数值求解，并考虑了物性参数随温度与水分浓度的变化以及烘干过程中药材尺寸的收缩。通过收敛性检验与守恒性
+验证，表明模型能够稳定、准确地刻画药材内部温度场与水分场的时空演化规律，可为中药材热风烘干工艺的评估与优化提供理论依据。
+
 \subsection{模型的优点}
 \begin{itemize}[itemindent=2em]
-\item 优点1
-\item 优点2
-\item 优点3
+\item 物理机理明确，基于傅里叶导热定律与有效 Fick 扩散定律建立控制方程，能清晰反映热量传递与水分迁移的耦合过程。
+\item 数值算法稳定，采用控制体离散与界面系数算术平均，保证内部界面通量成对抵消；并在此基础上\textbf{创新性地引入了守恒性检验机制}，
+从全局能量守恒与水分质量守恒两个维度对数值解进行定量验证，显著提升了结果的可信度。
+\item 适用性较强，既能处理常物性预热平衡阶段，也能处理变物性、两阶段环境切换等复杂情形，且 PCHIP 边界插值有效避免了非物理振荡。
 \end{itemize}
 
 \subsection{模型的推广与改进}
+本文模型可推广至其他农产品或中药材的热风干燥过程。未来可从以下方向改进：建立二维或三维模型以刻画端面与周向效应；引入孔隙尺度或分形孔道网络模型以更精细地描述内部水分迁移；耦合应力应变方程以模拟干燥开裂；结合优化算法对烘干工艺参数进行寻优，以实现节能与品质提升。
 
 \subsection{模型的缺点}
 \begin{itemize}[itemindent=2em]
-\item 缺点1
-\item 缺点2
+\item 采用一维径向假设，忽略了轴向与圆周方向的传递，对长径比较小或初始分布不均匀的药材会产生一定偏差。
+\item 采用宏观连续介质与局部热平衡假设，未考虑药材内部孔隙结构、细胞组织及内热源的影响，且物性经验公式的适用范围有限。
 \end{itemize}
+
+\subsection{综合结论}
+综合图表与数值检验可得到以下结论：
+\begin{enumerate}[itemindent=2em]
+\item 预热阶段首先在药材表面形成较高温度和较低水分浓度，中心响应滞后；1800 s 时表面温度比中心高约 \(3.21^\circ\mathrm{C}\)，表面水分浓度降至 \(1.5125\,\mathrm{kg/kg}\)。
+\item 恒温阶段温度场在约 0.5 h 内基本均匀，而水分场仍保持显著径向梯度，3 h 后中心水分浓度为 \(1.3177\,\mathrm{kg/kg}\)，说明后续过程主要受内部扩散和表面传质控制。
+\item 固定半径模型预测达到 \(0.15\,\mathrm{kg/kg}\) 的全域干燥时间为 \(58.51\,\mathrm{h}\)；考虑收缩后，半径由 \(2.000\,\mathrm{cm}\) 降至 \(1.198\,\mathrm{cm}\)，干燥时间缩短至 \(51.34\,\mathrm{h}\)。工艺设计应同时监测中心含水率与尺寸变化，不能仅依据表面状态停机。
+\end{enumerate}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 参考文献
@@ -4095,15 +4162,3 @@ if __name__ == "__main__":
 
 \end{appendices}
 \end{document}
-
-
-%%%%%双图模板%%%%%%
-\begin{figure}
-\centering
-\subcaptionbox{炉温曲线示意图\label{fig:双图a}}
-{\includegraphics[width=.4\textwidth]{炉温曲线示意图.png}}
-\subcaptionbox{问题1炉温曲线\label{fig:双图b}}
-{\includegraphics[width=.4\textwidth]{问题1炉温曲线.png}}
-\caption{双图}\label{fig:双图}
-\end{figure} 
-%%%%%双图模板%%%%%%

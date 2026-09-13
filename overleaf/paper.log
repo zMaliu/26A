@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.2 NEXT) (preloaded format=xelatex 2026.3.17)  13 SEP 2026 09:47
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.2 NEXT) (preloaded format=xelatex 2026.3.17)  13 SEP 2026 12:10
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -925,23 +925,23 @@ Package hyperref Info: Link coloring ON on input line 94.
 \@outlinefile=\write4
 \openout4 = `paper.out'.
 
-
-
-[1
-
-]
-LaTeX Font Info:    Calculating math sizes for size <12.05> on input line 133.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 133
+LaTeX Font Info:    Calculating math sizes for size <12.05> on input line 101.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 101
 .
- (C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+
+(C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 133
+LaTeX Font Info:    Trying to load font information for U+msb on input line 101
 .
 
 (C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+
+[1
+
+]
 
 [2]
 
@@ -949,18 +949,13 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 [4]
 
-Package natbib Warning: Citation `liu2020numerical' on page 5 undefined on inpu
-t line 218.
-
-
-
 [5]
 File: pic/illustration.png Graphic file (type bmp)
 <pic/illustration.png>
 
 
 LaTeX Font Warning: Font shape `TU/SimSun(1)/b/n' undefined
-(Font)              using `TU/SimSun(1)/m/n' instead on input line 233.
+(Font)              using `TU/SimSun(1)/m/n' instead on input line 230.
 
 
 
@@ -980,14 +975,10 @@ File: pic/algorithm1.pdf Graphic file (type pdf)
 
 
 [12]
-File: pic/q1_1_水分时间演化图.png Graphic file (type bmp)
-<pic/q1_1_水分时间演化图.png>
-File: pic/q1_2_温度时间演化图.png Graphic file (type bmp)
-<pic/q1_2_温度时间演化图.png>
-File: pic/q1_3_温度和水分热力图.png Graphic file (type bmp)
-<pic/q1_3_温度和水分热力图.png>
-File: pic/q1_4_问题一径向温度和含水率分布.png Graphic file (type bmp)
-<pic/q1_4_问题一径向温度和含水率分布.png>
+File: pic/q1_综合图.png Graphic file (type bmp)
+<pic/q1_综合图.png>
+File: pic/q1_三维图.png Graphic file (type bmp)
+<pic/q1_三维图.png>
 
 
 [13]
@@ -999,96 +990,116 @@ File: pic/q1_4_问题一径向温度和含水率分布.png Graphic file (type bm
 [16]
 
 [17]
+File: pic/q2_综合图.png Graphic file (type bmp)
+<pic/q2_综合图.png>
+File: pic/q2_三维图.png Graphic file (type bmp)
+<pic/q2_三维图.png>
+
+Overfull \hbox (12.24763pt too wide) in paragraph at lines 795--802
+\OT1/cmr/m/n/12.05 0\OML/cmm/m/it/12.05 :\OT1/cmr/m/n/12.05 0008[][]$\TU/SimSun
+(0)/m/n/12.05 。|  相 比 之 下，|  水 分 场 的 弛 豫 明 显 较 慢，|  表 \TU/TeXGyreTermes(0)/m/n/
+12.05 4 \TU/SimSun(0)/m/n/12.05 中 心 水 分 浓 度 由 $\OT1/cmr/m/n/12.05 2\OML/cmm/m/i
+t/12.05 :\OT1/cmr/m/n/12.05 1583$ \TU/SimSun(0)/m/n/12.05 降 至 $\OT1/cmr/m/n/12.
+05 1\OML/cmm/m/it/12.05 :\OT1/cmr/m/n/12.05 3177 []$\TU/SimSun(0)/m/n/12.05 ，|
+ []
+
+
 
 [18]
-File: pic/q2_水分时间演化图.png Graphic file (type bmp)
-<pic/q2_水分时间演化图.png>
-File: pic/q2_温度和水分热力图.png Graphic file (type bmp)
-<pic/q2_温度和水分热力图.png>
-File: pic/q2_温度时间演化图.png Graphic file (type bmp)
-<pic/q2_温度时间演化图.png>
-
-
-Package paper Warning: Missing figure pic/q2_问题二的时空演化图.png; skipped on input li
-ne 816.
-
-
 
 [19]
+File: pic/验证_稳定时间.png Graphic file (type bmp)
+<pic/验证_稳定时间.png>
+
 
 [20]
-File: pic/q3_水分时间演化图.png Graphic file (type bmp)
-<pic/q3_水分时间演化图.png>
-File: pic/q3_水分热力图.png Graphic file (type bmp)
-<pic/q3_水分热力图.png>
-File: pic/q3_水分热力图.png Graphic file (type bmp)
-<pic/q3_水分热力图.png>
-
-
-Package paper Warning: Missing figure pic/q3_达到干燥标准前后的径向含水率.png; skipped on inp
-ut line 940.
-
-File: pic/q3_阈值判定图.png Graphic file (type bmp)
-<pic/q3_阈值判定图.png>
-
 
 [21]
+File: pic/q3_综合图.png Graphic file (type bmp)
+<pic/q3_综合图.png>
+File: pic/q3_三维图.png Graphic file (type bmp)
+<pic/q3_三维图.png>
+
+Overfull \hbox (24.49446pt too wide) in paragraph at lines 928--932
+[]\TU/SimSun(0)/m/n/12.05 表 \TU/TeXGyreTermes(0)/m/n/12.05 5 \TU/SimSun(0)/m/n/
+12.05 和 图 [][]\TU/TeXGyreTermes(0)/m/n/12.05 8[][] \TU/SimSun(0)/m/n/12.05 共 同 
+揭 示 了 干 燥 结 束 由 中 心 区 域 控 制。| \TU/TeXGyreTermes(0)/m/n/12.05 18 h \TU/SimSun(0)
+/m/n/12.05 时 中 心 水 分 浓 度 仍 为 $\OT1/cmr/m/n/12.05 0\OML/cmm/m/it/12.05 :\OT1/cmr
+/m/n/12.05 2992 []$\TU/SimSun(0)/m/n/12.05 ，|
+ []
+
+
 
 [22]
 
 [23]
 
 [24]
-File: pic/q4algorithm.pdf Graphic file (type pdf)
-<use pic/q4algorithm.pdf>
-
 
 [25]
+File: pic/q4algorithm.pdf Graphic file (type pdf)
+<use pic/q4algorithm.pdf>
+File: pic/q4_综合图.png Graphic file (type bmp)
+<pic/q4_综合图.png>
+File: pic/q4_三维图.png Graphic file (type bmp)
+<pic/q4_三维图.png>
+
 
 [26]
 
 [27]
+File: pic/验证_独立重算交叉校验.png Graphic file (type bmp)
+<pic/验证_独立重算交叉校验.png>
+
 
 [28]
 
 [29]
-No file paper.bbl.
+File: pic/验证_守恒对照_三问.png Graphic file (type bmp)
+<pic/验证_守恒对照_三问.png>
 
 
 [30]
+File: pic/验证_时间步收敛_三问.png Graphic file (type bmp)
+<pic/验证_时间步收敛_三问.png>
+File: pic/验证_空间步收敛_三问.png Graphic file (type bmp)
+<pic/验证_空间步收敛_三问.png>
+File: pic/验证_问题四收敛.png Graphic file (type bmp)
+<pic/验证_问题四收敛.png>
+
+
+[31]
+
+[32]
+
+[33] (paper.bbl)
+
+[34]
 (C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2024/09/23 1.10c listings language file
 )
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 4077.
+nput line 4144.
 
 (code/q1_1.py)
 
-[31] (code/q1_2.py
-
-[32]
-
-[33]) (code/q1_3.py
-
-[34]
-
-[35]
+[35] (code/q1_2.py
 
 [36]
 
-[37]) (code/q2_1.py
+[37]) (code/q1_3.py
 
 [38]
 
-[39]) (code/q2_2.py) (code/q2_3.py
+[39]
 
 [40]
 
-[41]
+[41]) (code/q2_1.py
 
 [42]
 
-[43]
+[43]) (code/q2_2.py) (code/q2_3.py
 
 [44]
 
@@ -1096,7 +1107,7 @@ nput line 4077.
 
 [46]
 
-[47]) (code/q3.py
+[47]
 
 [48]
 
@@ -1104,7 +1115,7 @@ nput line 4077.
 
 [50]
 
-[51]) (code/q4.py
+[51]) (code/q3.py
 
 [52]
 
@@ -1112,9 +1123,9 @@ nput line 4077.
 
 [54]
 
-[55]
+[55]) (code/q4.py
 
-[56]) (code/validate_all.py
+[56]
 
 [57]
 
@@ -1122,23 +1133,28 @@ nput line 4077.
 
 [59]
 
-[60]
+[60]) (code/validate_all.py
 
 [61]
 
 [62]
 
-[63])
+[63]
+
+[64]
+
+[65]
+
+[66]
+
+[67])
 
 Package caption Warning: Unused \captionsetup[sub] on input line 27.
 See the caption package documentation for explanation.
 
 
-Package natbib Warning: There were undefined citations.
 
-
-
-[64] (paper.aux)
+[68] (paper.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
@@ -1147,16 +1163,19 @@ L3 programming layer <2022/08/05>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 8E2658F706C67FE995003B22E1A2798F;10430.
+(rerunfilecheck)             Checksum: 391C4241C9626FCFD0925AE2F0BEB6EB;10775.
  ) 
 Here is how much of TeX's memory you used:
- 24348 strings out of 405075
- 492445 string characters out of 5499982
- 2515168 words of memory out of 5000000
- 50528 multiletter control sequences out of 15000+600000
+ 24410 strings out of 405075
+ 493213 string characters out of 5499982
+ 2515785 words of memory out of 5000000
+ 50583 multiletter control sequences out of 15000+600000
  643536 words of font info for 181 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  108i,12n,125p,513b,2601s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on paper.pdf (64 pages).
+Output written on paper.pdf (68 pages).
