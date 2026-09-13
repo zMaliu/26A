@@ -1,4 +1,4 @@
-"""生成问题二的 5500 s 初始剖面。"""
+# 生成问题二5500 s初始剖面
 
 from pathlib import Path
 
@@ -18,7 +18,7 @@ R_MAX = 0.02
 
 
 def main():
-    """用附录 3 变物性模型计算 5500 s 状态。"""
+    # 计算5500 s状态
     boundary_file = OUTPUT_DIR / "output1.xlsx"
     if not boundary_file.exists():
         raise FileNotFoundError(f"未找到边界文件：{boundary_file}，请先运行 q1_1.py")

@@ -7,10 +7,11 @@
 3. `python q1_3.py`：检查问题一的时间步、空间步和水分/能量守恒。
 4. `python q2_1.py`：识别恒温边界并生成 `output_excel/output2.xlsx`。
 5. `python q2_2.py`：用附录 3 变物性模型计算绝对时间 5500 s 状态，生成 `output_excel/output3.xlsx`。
-6. `python q2_3.py`：以 5500 s 状态为初值，继续计算 3 h，生成 `result2.xlsx`（双工作表）、`q2_1.xlsx`～`q2_4.xlsx` 和问题二图表、检验结果。
-7. `python q3.py`：从原始初态开始，按全域最大含水率不超过 0.15 判定结束，生成 `result3.xlsx` 和 6 h 摘要表。
+6. `python q2_3.py`：以 5500 s 状态为初值，继续计算 3 h，生成 `result2.xlsx`（双工作表）、`q2_1.xlsx`～`q2_4.xlsx` 和检验结果。
+7. `python q3.py`：从原始初态开始，按全域最大水分浓度不超过 0.15 判定结束，生成 `result3.xlsx` 和 6 h 摘要表。
 8. `python validate_all.py`：独立重算三问并完成文件结构、5500 s 断点、时间/空间收敛、守恒、物理范围和阈值交叉验证；同时生成验证图和 `output_excel/validation_report.json`。
-9. `python q4.py`：读取附件2半径数据，采用 PCHIP 插值，在移动无量纲径向网格上使用附录4物性公式求解问题四，生成 `output_excel/result4.xlsx`、`q4_radius_interp.xlsx` 和问题四图表。
+9. `python q4.py`：读取附件2半径数据，采用 PCHIP 插值，在移动无量纲径向网格上使用附录4物性公式求解问题四，生成 `output_excel/result4.xlsx`、`q4_radius_interp.xlsx` 和检验结果。
+10. `python plot_condensed.py`：统一生成每问一张二维综合图和一张三维图，共 8 张论文主图。
 
 ## 时间约定
 
@@ -38,9 +39,12 @@
 问题四输出与验证：
 
 - `output_excel/result4.xlsx`：水分浓度完整表、表6摘要、无量纲网格和半径插值；
+- `output_excel/q4_1.xlsx`：按表6格式整理的6 h摘要和干燥结束时刻数据；
 - `output_excel/q4_radius_interp.xlsx`：附件2的 60 s PCHIP 半径插值；
-- `pic/q4_半径插值图.png`、`pic/q4_阈值判定图.png`、`pic/q4_水分热力图.png`：半径、阈值和时空分布图。
+- `pic/q4_综合图.png`、`pic/q4_三维图.png`：问题四二维综合图和物理半径三维图。
 - 问题四独立重算、材料坐标积分恒等式和步长收敛结果也会写入 `validation_report.json`。
 - 问题四结果：半径由 2.000 cm 收缩至 1.198 cm；首次满足全域 `C<=0.15` 的时间为约 `184815.7394 s = 51.33771 h`。
+
+论文主结果图统一命名为 `q1_综合图.png`、`q1_三维图.png`，以及对应的 `q2`、`q3`、`q4` 文件。旧的单曲线和单热力图不再由求解脚本自动生成。
 
 论文中的“模型的分析与检验”章节已给出上述判据、公式、数值结果和图表引用，可直接据此撰写结果可靠性分析。论文模板类文件 `cumcm_thesis.cls` 不在本目录时，无法在本机完成 XeLaTeX 编译，但这不影响 Python 求解和验证结果。

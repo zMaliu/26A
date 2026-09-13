@@ -1,8 +1,7 @@
-"""问题四：变半径、变物性热质耦合模型。"""
+# 问题四变半径模型
 
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.interpolate import PchipInterpolator
@@ -13,7 +12,6 @@ from q3 import get_full_boundary_funcs
 BASE_DIR = Path(__file__).resolve().parent
 INPUT_DIR = BASE_DIR / "input_excel"
 OUTPUT_DIR = BASE_DIR / "output_excel"
-PIC_DIR = BASE_DIR / "pic"
 RADIUS_FILE = INPUT_DIR / "附件2.xlsx"
 if not RADIUS_FILE.exists():
     RADIUS_FILE = BASE_DIR / "附件" / "附件2.xlsx"
@@ -30,7 +28,7 @@ T_MAX = 250.0
 
 
 def load_radius_data(path=RADIUS_FILE):
-    """读取附件2半径数据。"""
+    # 读取半径数据
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"未找到半径文件：{path}")
@@ -51,7 +49,7 @@ def load_radius_data(path=RADIUS_FILE):
 
 
 def interpolate_radius(dt=DT, t_end=MAX_TIME, path=RADIUS_FILE):
-    """PCHIP插值到计算时间网格。"""
+    # PCHIP插值
     t_raw, r_raw = load_radius_data(path)
     if dt <= 0 or t_end < 0:
         raise ValueError("时间参数必须为正")
@@ -61,7 +59,7 @@ def interpolate_radius(dt=DT, t_end=MAX_TIME, path=RADIUS_FILE):
         raise ValueError("插值终点超过附件2范围")
     pchip = PchipInterpolator(t_raw, r_raw)
     r = np.asarray(pchip(t), dtype=float)
-    # PCHIP理论上保持单调，浮点误差只做极小修正。
+    # 修正浮点误差
     r = np.minimum.accumulate(r)
     if np.any(r <= 0):
         raise ValueError("插值后出现非正半径")
@@ -69,24 +67,12 @@ def interpolate_radius(dt=DT, t_end=MAX_TIME, path=RADIUS_FILE):
 
 
 def save_radius_interpolation():
-    """保存插值表和插值图。"""
+    # 保存半径插值
     t, r, t_raw, r_raw = interpolate_radius()
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     pd.DataFrame({"时间/s": t.astype(int), "半径/m": r, "半径/cm": r * 100.0}).to_excel(
         OUTPUT_DIR / "q4_radius_interp.xlsx", index=False
     )
-    PIC_DIR.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(9, 5))
-    ax.plot(t / 3600.0, r * 100.0, label="PCHIP插值")
-    ax.scatter(t_raw / 3600.0, r_raw * 100.0, s=16, label="附件2观测")
-    ax.set_xlabel("时间/h")
-    ax.set_ylabel("半径/cm")
-    ax.set_title("附件2半径数据的PCHIP插值")
-    ax.grid(alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(PIC_DIR / "q4_半径插值图.png", dpi=300)
-    plt.close(fig)
     return t, r
 
 
@@ -113,7 +99,7 @@ def D_of_CT(C, T):
 
 
 def solve_tridiag(a, b, c, d):
-    """追赶法。"""
+    # 追赶法
     n = len(b)
     if n == 0:
         return np.empty(0)
@@ -139,7 +125,7 @@ def solve_tridiag(a, b, c, d):
 
 def _assemble_scalar(old, coeff, storage, radius, dt, dx,
                      boundary_value, boundary_coeff):
-    """组装固定ξ控制体隐式方程。"""
+    # 组装隐式方程
     nr = len(old)
     x = np.linspace(0.0, 1.0, nr)
     w = np.zeros(nr)
@@ -150,19 +136,19 @@ def _assemble_scalar(old, coeff, storage, radius, dt, dx,
     b = np.ones(nr)
     c = np.zeros(nr)
     d = old.copy()
-    # 内部扩散通量，方程已变换到ξ坐标。
+    # 内部扩散通量
     face_x = (np.arange(nr - 1) + 0.5) * dx
     for f in range(nr - 1):
         xi_face = face_x[f]
         left, right = f, f + 1
-        # F=ξ q (u_right-u_left)/dx；两侧控制体共享同一F。
+        # 相邻控制体共用通量
         g_left = 2.0 * dt * xi_face * coeff[f] / (radius**2 * storage[left] * w[left] * dx)
         g_right = 2.0 * dt * xi_face * coeff[f] / (radius**2 * storage[right] * w[right] * dx)
         c[left] -= g_left
         b[left] += g_left
         a[right] -= g_right
         b[right] += g_right
-    # 表面对流项：-q/R= h(u_s-u_air)。
+    # 表面对流项
     g_conv = 2.0 * dt * boundary_coeff / (radius * storage[-1] * w[-1])
     b[-1] += g_conv
     d[-1] += g_conv * boundary_value
@@ -170,7 +156,7 @@ def _assemble_scalar(old, coeff, storage, radius, dt, dx,
 
 
 def solve_problem4(dt=DT, dx=DX, t_end=MAX_TIME, stop_at_threshold=True):
-    """求解变半径全过程，返回无量纲径向网格上的场。"""
+    # 求解变半径全过程
     if dt <= 0 or dx <= 0 or t_end < 0:
         raise ValueError("时间和空间步长必须为正")
     n_interval = int(round(1.0 / dx))
@@ -201,7 +187,7 @@ def solve_problem4(dt=DT, dx=DX, t_end=MAX_TIME, stop_at_threshold=True):
         aT, bT, cT, dT = _assemble_scalar(
             T[n], k_face, H, Rnext, dt, dx, T_air, 25.0,
         )
-        # 温度存储量为 rho*cp。
+        # 温度存储量
         T[n + 1] = solve_tridiag(aT, bT, cT, dT)
 
         aC, bC, cC, dC = _assemble_scalar(
@@ -235,7 +221,7 @@ def solve_problem4(dt=DT, dx=DX, t_end=MAX_TIME, stop_at_threshold=True):
 
 
 def _append_interpolated_end(t, radius, T, C, max_C, drying_time):
-    """追加阈值线性插值行。"""
+    # 追加插值结束行
     if drying_time is None or drying_time >= t[-1] - 1e-12:
         return t, radius, T, C, max_C
     j = len(t) - 1
@@ -250,7 +236,7 @@ def _append_interpolated_end(t, radius, T, C, max_C, drying_time):
 
 
 def _physical_table(t, radius, x, C):
-    """按物理距离输出，域外位置留空。"""
+    # 输出物理半径网格
     target_cm = np.round(np.arange(0.0, 2.0 + 1e-12, 0.1), 1)
     rows = []
     for n, time in enumerate(t):
@@ -267,7 +253,7 @@ def _physical_table(t, radius, x, C):
 
 
 def _summary_table(t, radius, x, C, drying_time):
-    """生成表6摘要。"""
+    # 生成表6摘要
     regular = np.arange(6.0, np.floor(t[-1] / 21600.0) * 6.0 + 1e-12, 6.0) * 3600.0
     targets = list(regular)
     if drying_time is not None and (not targets or drying_time > targets[-1] + 1e-8):
@@ -288,7 +274,7 @@ def _summary_table(t, radius, x, C, drying_time):
 
 
 def save_results():
-    """求解并保存第四问结果。"""
+    # 保存第四问结果
     t, radius, x, T, C, max_C, drying_time = solve_problem4()
     t, radius, T, C, max_C = _append_interpolated_end(t, radius, T, C, max_C, drying_time)
     full = _physical_table(t, radius, x, C)
@@ -304,8 +290,12 @@ def save_results():
         pd.DataFrame({"时间/s": np.round(t, 2), "半径/cm": np.round(radius * 100.0, 6)}).to_excel(
             writer, sheet_name="半径插值", index=False
         )
+    # 保存表6格式
+    q4_1 = summary[["时间/h", "0.0", "0.5", "1.0", "1.5", "药材表面"]].copy()
+    q4_1.to_excel(OUTPUT_DIR / "q4_1.xlsx", index=False)
     _plot_results(t, radius, x, C, max_C, drying_time)
     print(f"第四问结果已保存：{OUTPUT_DIR / 'result4.xlsx'}")
+    print(f"表6结果已保存：{OUTPUT_DIR / 'q4_1.xlsx'}")
     if drying_time is None:
         print("最大计算时长内未达到水分阈值")
     else:
@@ -314,53 +304,27 @@ def save_results():
 
 
 def _plot_results(t, radius, x, C, max_C, drying_time):
-    """绘制第四问结果图。"""
-    PIC_DIR.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(9, 5))
-    ax.plot(t / 3600.0, max_C, label="全域最大值")
-    ax.plot(t / 3600.0, C[:, 0], label="中心")
-    ax.plot(t / 3600.0, C[:, -1], label="表面")
-    ax.axhline(MOISTURE_LIMIT, color="black", linestyle="--", label="阈值0.15")
-    if drying_time is not None:
-        ax.axvline(drying_time / 3600.0, color="tab:red", linestyle=":", label=f"结束{drying_time / 3600.0:.3f} h")
-    ax.set_xlabel("时间/h")
-    ax.set_ylabel("水分浓度")
-    ax.set_title("问题四水分浓度与烘干阈值")
-    ax.grid(alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(PIC_DIR / "q4_阈值判定图.png", dpi=300)
-    plt.close(fig)
-
-    fig, ax = plt.subplots(figsize=(9, 5))
-    mesh_t, mesh_x = np.meshgrid(t / 3600.0, x, indexing="ij")
-    im = ax.pcolormesh(mesh_t, mesh_x, C, shading="auto", cmap="viridis")
-    fig.colorbar(im, ax=ax, label="水分浓度")
-    ax.set_xlabel("时间/h")
-    ax.set_ylabel("无量纲半径 ξ=r/R(t)")
-    ax.set_title("问题四水分浓度时空分布")
-    fig.tight_layout()
-    fig.savefig(PIC_DIR / "q4_水分热力图.png", dpi=300)
-    plt.close(fig)
+    # 结果图统一由 plot_condensed.py 生成
+    return None
 
 
 def validate_q4():
-    """第四问基本校验。"""
+    # 校验第四问
     result = solve_problem4(stop_at_threshold=False)
     t, radius, x, T, C, max_C, drying_time = result
     if not (np.all(np.isfinite(T)) and np.all(np.isfinite(C)) and np.all(C >= -1e-12)):
         raise AssertionError("第四问出现非有限值或负水分")
     if np.any(np.diff(radius) > 1e-12):
         raise AssertionError("第四问半径未保持单调不增")
-    # 收缩初期允许表面压缩造成的极小回升，恒温段应单调下降。
+    # 检查半径和水分浓度趋势
     stable_idx = np.searchsorted(t, 5500.0)
     if np.any(np.diff(max_C[stable_idx:]) > 1e-7):
-        raise AssertionError("第四问恒温段全域最大水分不单调")
+        raise AssertionError("第四问恒温段全域最大水分浓度不单调")
     if drying_time is None:
         hit = np.flatnonzero(max_C <= MOISTURE_LIMIT)
         if len(hit):
             raise AssertionError("第四问阈值时间记录异常")
-    # 检查ξ坐标下的水分守恒。
+    # 检查材料坐标守恒
     dt = float(t[1] - t[0]) if len(t) > 1 else DT
     w = np.zeros(len(x))
     w[0] = (DX / 2.0) ** 2

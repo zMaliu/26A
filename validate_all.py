@@ -1,4 +1,4 @@
-"""四问结果的独立重算、收敛、守恒和物理范围交叉验证。"""
+# 四问独立重算和交叉检验
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ plt.rcParams["axes.unicode_minus"] = False
 
 
 def control_volumes(dr: float, nr: int):
-    """返回单位长度控制体体积和表面积。"""
+    # 计算控制体体积
     v = np.zeros(nr)
     v[0] = np.pi * (dr / 2.0) ** 2
     for i in range(1, nr - 1):
@@ -58,7 +58,7 @@ def add_check(report: dict, name: str, passed: bool, value=None, criterion: str 
 
 
 def validate_file_structure(report: dict):
-    """检查结果文件的工作表、网格、时间和有限值。"""
+    # 检查文件结构
     expected = {
         "result1.xlsx": (2, 1801, 0.0, 1800.0, 1.0),
         "result2.xlsx": (2, 10801, 0.0, 10800.0, 1.0),
@@ -156,7 +156,7 @@ def validate_file_structure(report: dict):
 
 
 def q1_recompute_and_balance(report: dict):
-    """独立重算问题一，并检查全局能量和水分守恒。"""
+    # 重算问题一并检查守恒
     t_func, c_func = get_q1_boundary()
     t, r, temp, moist = solve_q1(1.0, 0.001, t_end=1800.0, T_air_func=t_func, C_air_func=c_func)
     book = pd.ExcelFile(OUTPUT_DIR / "result1.xlsx")
@@ -183,7 +183,7 @@ def q1_recompute_and_balance(report: dict):
 
 
 def q2_recompute_and_balance(report: dict):
-    """独立重算问题二，并检查5500 s断点、守恒和物理范围。"""
+    # 重算问题二并检查断点
     t_func, c_func = get_q2_boundary(t_start=INITIAL_TIME)
     t, r, temp, moist = solve_q2(
         1.0, 0.001, t_end=10800.0, t_start=INITIAL_TIME,
@@ -287,7 +287,7 @@ def convergence_q3(report: dict):
 
 
 def q3_full(report: dict):
-    """复核问题三全过程、阈值和最终表。"""
+    # 复核问题三全过程
     t, r, temp, moist, drying_time, max_c = solve_problem3()
     stored = read_sheet(OUTPUT_DIR / "result3.xlsx").iloc[:, 1:].to_numpy(dtype=float)
     err = float(np.max(np.abs(np.round(moist[: stored.shape[0] - 1], 4) - stored[:-1])))
@@ -317,7 +317,7 @@ def q3_full(report: dict):
 
 
 def q4_recompute(report: dict):
-    """独立重算第四问并检查物理范围、半径和守恒。"""
+    # 重算问题四并检查守恒
     q4_check = q4.validate_q4()
     stored = read_sheet(OUTPUT_DIR / "result4.xlsx", 2).iloc[:, 1:-1].to_numpy(dtype=float)
     t, radius, x, T, C, max_C, drying_time = q4.solve_problem4()
@@ -340,7 +340,7 @@ def q4_recompute(report: dict):
     conv = {"time_error": et, "time_ratio": et[1] / et[0], "space_error": ec, "space_ratio": ec[1] / ec[0]}
     add_check(report, "问题四_步长收敛", et[1] < et[0] and ec[1] < ec[0]
               and 0.35 < conv["time_ratio"] < 0.65 and 0.15 < conv["space_ratio"] < 0.35,
-              conv, "固定ξ网格误差递减；时间比约0.5，空间比约0.25")
+              conv, "固定 xi 网格误差递减；时间比约0.5，空间比约0.25")
     return {"check": q4_check, "convergence": conv}
 
 
@@ -385,7 +385,7 @@ def plot_convergence(report: dict):
 
 
 def plot_balance(q1: dict, q2: dict, q3: dict):
-    """绘制储量变化与边界通量积分的对照图。"""
+    # 绘制守恒对照图
     fig, axes = plt.subplots(2, 2, figsize=(14, 9))
     # 问题一能量和水分
     v1, area1 = control_volumes(0.001, len(q1["r"]))
@@ -402,7 +402,7 @@ def plot_balance(q1: dict, q2: dict, q3: dict):
     axes[0, 1].plot(q1["t"][1:], dm1, "--", label="边界质流积分")
     axes[0, 1].set_title(f"问题一水分守恒（残差 {q1['m_res']:.2e}）")
 
-    # 问题二、三水分
+    # 问题二和三水分
     v2, area2 = control_volumes(0.001, len(q2["r"]))
     tf2, cf2 = get_q2_boundary(t_start=INITIAL_TIME)
     ac2 = np.asarray(cf2(INITIAL_TIME + q2["t"]))
@@ -458,7 +458,7 @@ def plot_cross_check(report: dict):
 
 
 def plot_q4_validation(report: dict):
-    """绘制问题四步长收敛和半径范围。"""
+    # 绘制问题四检验图
     conv = report["checks"]["问题四_步长收敛"]["value"]
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     axes[0].loglog([120, 60], conv["time_error"], "o-")
@@ -487,7 +487,7 @@ def main():
     q3 = q3_full(report)
     q4_result = q4_recompute(report)
 
-    # 5500 s 断点：用问题三全过程重算值与 output3.xlsx 比较
+    # 比较5500 s断点
     t_func, c_func = get_q2_boundary(path=OUTPUT_DIR / "output1.xlsx", t_start=0.0)
     _, r_chk, t_chk, c_chk = solve_q2(
         1.0, 0.001, t_end=5500.0, t_start=0.0, initial_file=None,
@@ -516,13 +516,18 @@ def main():
         "q4_radius_start_cm": q4_result["check"]["radius_start_cm"],
         "q4_radius_end_cm": q4_result["check"]["radius_end_cm"],
         "figure_files": [
+            "q1_综合图.png",
+            "q1_三维图.png",
+            "q2_综合图.png",
+            "q2_三维图.png",
+            "q3_综合图.png",
+            "q3_三维图.png",
+            "q4_综合图.png",
+            "q4_三维图.png",
             "验证_时间步收敛_三问.png",
             "验证_空间步收敛_三问.png",
             "验证_守恒对照_三问.png",
             "验证_独立重算交叉校验.png",
-            "q4_半径插值图.png",
-            "q4_阈值判定图.png",
-            "q4_水分热力图.png",
             "验证_问题四收敛.png",
         ],
     }
