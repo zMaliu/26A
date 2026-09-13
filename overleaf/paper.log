@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.2 NEXT) (preloaded format=xelatex 2026.3.17)  13 SEP 2026 09:46
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.2 NEXT) (preloaded format=xelatex 2026.3.17)  13 SEP 2026 09:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -844,4 +844,319 @@ LaTeX Font Info:    Redeclaring math symbol \Psi on input line 94.
 LaTeX Font Info:    Redeclaring math symbol \Omega on input line 94.
 LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 94.
 LaTeX Font Info:    Redeclaring symbol font `operators' on input line 94.
-LaTeX F
+LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
+(Font)              `operators' in the math version `normal' on input line 94.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> TU/TeXGyreTermes(0)/m/n on input line 9
+4.
+LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
+(Font)              `operators' in the math version `bold' on input line 94.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> TU/TeXGyreTermes(0)/m/n on input line 
+94.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  TU/TeXGyreTermes(0)/m/n --> TU/TeXGyreTermes(0)/m/n on 
+input line 94.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> TU/TeXGyreTermes(0)/m/it on input line
+ 94.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> TU/TeXGyreTermes(0)/b/n on input line 
+94.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
+(Font)                  OT1/cmss/m/n --> TU/TeXGyreHeros(0)/m/n on input line 9
+4.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> TU/TeXGyreCursor(1)/m/n on input line 
+94.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  TU/TeXGyreTermes(0)/m/n --> TU/TeXGyreTermes(0)/b/n on 
+input line 94.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> TU/TeXGyreTermes(0)/b/it on input lin
+e 94.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/cmss/bx/n --> TU/TeXGyreHeros(0)/b/n on input line 
+94.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> TU/TeXGyreCursor(1)/b/n on input line 
+94.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: xetex
+*geometry* verbose mode - [ preamble ] result:
+* driver: xetex
+* paper: <default>
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(71.13188pt, 455.24411pt, 71.13188pt)
+* v-part:(T,H,B)=(71.13188pt, 702.78308pt, 71.13188pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=455.24411pt
+* \textheight=702.78308pt
+* \oddsidemargin=-1.1381pt
+* \evensidemargin=-1.1381pt
+* \topmargin=-38.1381pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=35.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+\c@lstlisting=\count379
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: hyperref package is loaded.
+Package caption Info: End \AtBeginDocument code.
+Package hyperref Info: Link coloring ON on input line 94.
+(paper.out) (paper.out)
+\@outlinefile=\write4
+\openout4 = `paper.out'.
+
+
+
+[1
+
+]
+LaTeX Font Info:    Calculating math sizes for size <12.05> on input line 133.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 133
+.
+ (C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 133
+.
+
+(C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+
+[2]
+
+[3]
+
+[4]
+
+Package natbib Warning: Citation `liu2020numerical' on page 5 undefined on inpu
+t line 218.
+
+
+
+[5]
+File: pic/illustration.png Graphic file (type bmp)
+<pic/illustration.png>
+
+
+LaTeX Font Warning: Font shape `TU/SimSun(1)/b/n' undefined
+(Font)              using `TU/SimSun(1)/m/n' instead on input line 233.
+
+
+
+[6]
+
+[7]
+
+[8]
+
+[9]
+
+[10]
+
+[11]
+File: pic/algorithm1.pdf Graphic file (type pdf)
+<use pic/algorithm1.pdf>
+
+
+[12]
+File: pic/q1_1_水分时间演化图.png Graphic file (type bmp)
+<pic/q1_1_水分时间演化图.png>
+File: pic/q1_2_温度时间演化图.png Graphic file (type bmp)
+<pic/q1_2_温度时间演化图.png>
+File: pic/q1_3_温度和水分热力图.png Graphic file (type bmp)
+<pic/q1_3_温度和水分热力图.png>
+File: pic/q1_4_问题一径向温度和含水率分布.png Graphic file (type bmp)
+<pic/q1_4_问题一径向温度和含水率分布.png>
+
+
+[13]
+
+[14]
+
+[15]
+
+[16]
+
+[17]
+
+[18]
+File: pic/q2_水分时间演化图.png Graphic file (type bmp)
+<pic/q2_水分时间演化图.png>
+File: pic/q2_温度和水分热力图.png Graphic file (type bmp)
+<pic/q2_温度和水分热力图.png>
+File: pic/q2_温度时间演化图.png Graphic file (type bmp)
+<pic/q2_温度时间演化图.png>
+
+
+Package paper Warning: Missing figure pic/q2_问题二的时空演化图.png; skipped on input li
+ne 816.
+
+
+
+[19]
+
+[20]
+File: pic/q3_水分时间演化图.png Graphic file (type bmp)
+<pic/q3_水分时间演化图.png>
+File: pic/q3_水分热力图.png Graphic file (type bmp)
+<pic/q3_水分热力图.png>
+File: pic/q3_水分热力图.png Graphic file (type bmp)
+<pic/q3_水分热力图.png>
+
+
+Package paper Warning: Missing figure pic/q3_达到干燥标准前后的径向含水率.png; skipped on inp
+ut line 940.
+
+File: pic/q3_阈值判定图.png Graphic file (type bmp)
+<pic/q3_阈值判定图.png>
+
+
+[21]
+
+[22]
+
+[23]
+
+[24]
+File: pic/q4algorithm.pdf Graphic file (type pdf)
+<use pic/q4algorithm.pdf>
+
+
+[25]
+
+[26]
+
+[27]
+
+[28]
+
+[29]
+No file paper.bbl.
+
+
+[30]
+(C:\Users\13622\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+File: lstlang1.sty 2024/09/23 1.10c listings language file
+)
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 4077.
+
+(code/q1_1.py)
+
+[31] (code/q1_2.py
+
+[32]
+
+[33]) (code/q1_3.py
+
+[34]
+
+[35]
+
+[36]
+
+[37]) (code/q2_1.py
+
+[38]
+
+[39]) (code/q2_2.py) (code/q2_3.py
+
+[40]
+
+[41]
+
+[42]
+
+[43]
+
+[44]
+
+[45]
+
+[46]
+
+[47]) (code/q3.py
+
+[48]
+
+[49]
+
+[50]
+
+[51]) (code/q4.py
+
+[52]
+
+[53]
+
+[54]
+
+[55]
+
+[56]) (code/validate_all.py
+
+[57]
+
+[58]
+
+[59]
+
+[60]
+
+[61]
+
+[62]
+
+[63])
+
+Package caption Warning: Unused \captionsetup[sub] on input line 27.
+See the caption package documentation for explanation.
+
+
+Package natbib Warning: There were undefined citations.
+
+
+
+[64] (paper.aux)
+ ***********
+LaTeX2e <2024-11-01> patch level 2
+L3 programming layer <2022/08/05>
+ ***********
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+Package rerunfilecheck Info: File `paper.out' has not changed.
+(rerunfilecheck)             Checksum: 8E2658F706C67FE995003B22E1A2798F;10430.
+ ) 
+Here is how much of TeX's memory you used:
+ 24348 strings out of 405075
+ 492445 string characters out of 5499982
+ 2515168 words of memory out of 5000000
+ 50528 multiletter control sequences out of 15000+600000
+ 643536 words of font info for 181 fonts, out of 8000000 for 9000
+ 1348 hyphenation exceptions out of 8191
+ 108i,12n,125p,513b,2601s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
+Output written on paper.pdf (64 pages).
